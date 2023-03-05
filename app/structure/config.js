@@ -1,6 +1,6 @@
-
+var partida = {}    
     jugadores: {
-        var IdJugadores = [];   //id de los 4 jugadores, si no juegan 4 se inicializa con -1, ordenados en orden de turno
+        IdJugadores = [];   //id de los 4 jugadores, si no juegan 4 se inicializa con -1, ordenados en orden de turno
         cartasJugador1 = [],    //11 -> 1 carta de madera
         cartasJugador2 = [],    //42 -> 4 cartas de trigo
         cartasJugador3 = [],    //Primer numero cantidad y segundo tipo -> 1 (madera), 2(trigo), 3(oveja), 4(roca) y 5(barro)
@@ -30,7 +30,7 @@
         carreterasContruidas = [],      //jugador carreteta (cordenadas)
         asentamientosConstruidos = []   //jugador tipoAsentamiento (cordenadas)
     }
-
+}
 
 
 
