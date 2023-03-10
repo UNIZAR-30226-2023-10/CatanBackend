@@ -82,32 +82,17 @@ function generar_tablero() {
     container.innerHTML = '';
     const cols = [3,4,5,4,3];
     for (let hexs in cols) {
-        console.log(hexs);
         let new_div = document.createElement('div');
         new_div.classList.add('map-row');
         for (let i = 0; i < cols[hexs]; i++) {
             let hex_div = document.createElement('div');
             hex_div.classList.add('hexagon');
             new_div.appendChild(hex_div);
-            hex_div.setAttribute('id',`hexagon-${hex_id[hexs][i]}`)
-            let color   = Biome_colors[the_board.biomes[hex_id[hexs][i]].type]
-            hex_div.class
-            hex_div.style.backgroundColor = color;
-            // Before, After:
-            let style = document.createElement('style');
-            style.textContent = `
-            #hexagon-${hex_id[hexs][i]}::before {
-                bottom: 100%;
-                border-bottom: 27.5px solid ${color};
+            let type = the_board.biomes[hex_id[hexs][i]].type;
+            hex_div.style.backgroundImage = `url('${Biome_image[type]}')`;
+            if (hexs === '4') {
+                hex_div.style.marginBottom = '150px';
             }
-
-            #hexagon-${hex_id[hexs][i]}::after {
-                top: 100%;
-                width: 0;
-                border-top: 27.5px solid ${color};
-            }
-            `
-            hex_div.appendChild(style);
         }
         container.appendChild(new_div);
     }
@@ -126,7 +111,7 @@ function generar_tablero() {
 const Biome_terraform = [4, 4, 3, 3, 4, 1];
 const Biome_name   = { 0:"Tierra de cultivo", 1:"Bosque", 2:"Colinas", 3:"Montañas", 4:"Pasto", 5:"Desierto" }
 const Biome_id     = { Farmland:0, Forest:1, Hill:2, Mountain:3, Pasture:4, Desert:5}
-const Biome_colors = ['#ecac38','#0b6a23','#b3804c','#7a8177','#a9d350','#fcfbb4'];
+const Biome_image = ['./farmland.png','forest.png','hill.png','mountain.png','pasture.png','desert.png'];
 
 // Inicio para la colocación de las fichas númericas.
 const Tokens_start_pos = { 0:0, 1:2, 2:4, 3:6, 4:8, 5:10 }

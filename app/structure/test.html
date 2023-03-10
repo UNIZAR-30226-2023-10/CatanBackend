@@ -6,37 +6,20 @@
     <style>
       .hexagon {
         position: relative;
-        width: 100px;
-        height: 55px;
-        background-color: gray;
+        width: 170px;
+        height: 210px;
         margin: 27.5px 0;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: contain;
       }
-
-      .hexagon::before, .hexagon::after {
-        content: "";
-        position: absolute;
-        width: 0;
-        border-left: 50px solid transparent;
-        border-right: 50px solid transparent;
-      }
-      /*
-
-      .hexagon::before {
-        bottom: 100%;
-        border-bottom: 27.5px solid gray;
-      }
-
-      .hexagon::after {
-        top: 100%;
-        width: 0;
-        border-top: 27.5px solid gray;
-      }
-      */
 
       #map-container {
+        width: 80%;
+        height: 80%;
         background-color: rgb(78, 169, 243);
         margin: 50px;
-        padding: 50px;
+        padding: 20px;
         border: 2px solid black;
         display: flex;
         flex-direction: column;
@@ -47,8 +30,9 @@
       .map-row {
         display: flex;
         flex-direction: row;
-        margin-bottom: -29px;
+        margin-bottom: -120px;
       }
+    
     </style>
   </head>
   <body onload="generate_board()">
