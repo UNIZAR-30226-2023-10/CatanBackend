@@ -8,7 +8,7 @@
         position: relative;
         width: 100px;
         height: 55px;
-        background-color: hsl(random(0, 360), random(50%, 100%), random(50%, 80%));
+        background-color: gray;
         margin: 27.5px 0;
       }
 
@@ -19,17 +19,19 @@
         border-left: 50px solid transparent;
         border-right: 50px solid transparent;
       }
+      /*
 
       .hexagon::before {
         bottom: 100%;
-        border-bottom: 27.5px solid hsl(random(0, 360), random(50%, 100%), random(50%, 80%));
+        border-bottom: 27.5px solid gray;
       }
 
       .hexagon::after {
         top: 100%;
         width: 0;
-        border-top: 27.5px solid hsl(random(0, 360), random(50%, 100%), random(50%, 80%));
+        border-top: 27.5px solid gray;
       }
+      */
 
       #map-container {
         background-color: rgb(78, 169, 243);
@@ -70,8 +72,9 @@
 
     <button onclick="simular_seleccion_orden()">Eleccion de orden</button>
 
-    <!--div id="map-container">
-      <div class="map-row">
+    <button onclick="generar_tablero()">Generar mapa</button>
+    <div id="map-container">
+      <!--div class="map-row">
         <div class="hexagon"></div>
         <div class="hexagon"></div>
         <div class="hexagon"></div>
@@ -99,8 +102,8 @@
         <div class="hexagon"></div>
         <div class="hexagon"></div>
         <div class="hexagon"></div>
-      </div>
-    </div-->
+      </div-->
+    </div>
 
   </body>
 </html>

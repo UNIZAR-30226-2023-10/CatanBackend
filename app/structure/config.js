@@ -76,14 +76,41 @@ function simular_seleccion_orden() {
     }
 }
 
+const hex_id = [[0,1,2],[11,12,13,3],[10,17,18,14,4],[9,16,15,5],[8,7,6]];
 function generar_tablero() {
     const container = document.getElementById('map-container');
-    const rows = 5;
+    container.innerHTML = '';
     const cols = [3,4,5,4,3];
-    //for (let i = 0; i < rows; i++) {
-    //    container
-    //}
+    for (let hexs in cols) {
+        console.log(hexs);
+        let new_div = document.createElement('div');
+        new_div.classList.add('map-row');
+        for (let i = 0; i < cols[hexs]; i++) {
+            let hex_div = document.createElement('div');
+            hex_div.classList.add('hexagon');
+            new_div.appendChild(hex_div);
+            hex_div.setAttribute('id',`hexagon-${hex_id[hexs][i]}`)
+            let color   = Biome_colors[the_board.biomes[hex_id[hexs][i]].type]
+            hex_div.class
+            hex_div.style.backgroundColor = color;
+            // Before, After:
+            let style = document.createElement('style');
+            style.textContent = `
+            #hexagon-${hex_id[hexs][i]}::before {
+                bottom: 100%;
+                border-bottom: 27.5px solid ${color};
+            }
 
+            #hexagon-${hex_id[hexs][i]}::after {
+                top: 100%;
+                width: 0;
+                border-top: 27.5px solid ${color};
+            }
+            `
+            hex_div.appendChild(style);
+        }
+        container.appendChild(new_div);
+    }
 }
 
 //=============================================================================
@@ -97,8 +124,9 @@ function generar_tablero() {
 // 5. Pasto/Lana                4
 // 6. Desierto                  1
 const Biome_terraform = [4, 4, 3, 3, 4, 1];
-const Biome_name = { 0:"Tierra de cultivo", 1:"Bosque", 2:"Colinas", 3:"Montañas", 4:"Pasto", 5:"Desierto" }
-const Biome_id   = { Farmland:0, Forest:1, Hill:2, Mountain:3, Pasture:4, Desert:5}
+const Biome_name   = { 0:"Tierra de cultivo", 1:"Bosque", 2:"Colinas", 3:"Montañas", 4:"Pasto", 5:"Desierto" }
+const Biome_id     = { Farmland:0, Forest:1, Hill:2, Mountain:3, Pasture:4, Desert:5}
+const Biome_colors = ['#ecac38','#0b6a23','#b3804c','#7a8177','#a9d350','#fcfbb4'];
 
 // Inicio para la colocación de las fichas númericas.
 const Tokens_start_pos = { 0:0, 1:2, 2:4, 3:6, 4:8, 5:10 }
@@ -149,6 +177,7 @@ class Board {
     }
 };
 
+var the_board;
 function generate_board() {
 
     // Generar biomas:
@@ -286,7 +315,7 @@ function generate_board() {
     //    console.log("Path: ", p, paths[p]);
     //}
 
-    return new Board(biomes, nodes, paths);
+    the_board = new Board(biomes, nodes, paths);
 };
 
 function tirar_dados() {
