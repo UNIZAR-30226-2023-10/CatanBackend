@@ -8,10 +8,11 @@ import jwt from 'jsonwebtoken'
 
 const Session = {
     async login(req, res) {
-        
-    },
-    async logup(req, res) {
-       
+        res.json(
+            {
+                "Title": "Login"
+            }
+        );
     },
 }
 

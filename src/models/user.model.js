@@ -1,9 +1,9 @@
-import  mongoose  from 'mongoose'
-import bcrypt from 'bcrypt'
+const  mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
 
-import mongoose_fuzzy_searching from 'mongoose-fuzzy-searching-v3';
+const mongoose_fuzzy_searching = require('mongoose-fuzzy-searching-v3')
 
-export const emailRegex =
+const emailRegex =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 
@@ -68,4 +68,4 @@ UserSchema.plugin( mongoose_fuzzy_searching, {fields : [ 'username' ]})
 
 const UserModel = mongoose.model('User', UserSchema)
 
-export default UserModel
+module.exports = UserModel

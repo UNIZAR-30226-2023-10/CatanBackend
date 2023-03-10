@@ -1,21 +1,22 @@
 {
-    "name": "CatanBackend",
-    "version": "0.0.0",
-    "description": "",
-    "main": "app/index.js",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "node app/index.js",
-      "babel-node": "babel-node --presets='@babel/preset-env'",
-      "dev": "NODE_ENV=dev nodemon --exec babel-node app/index.js",
-      "prod-test": "NODE_ENV=production nodemon --exec babel-node app/index.js"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/UNIZAR-30226-2023-10/CatanBackend"
-    },
-    "author": "UNIZAR-30226-2023-10",
-    "license": "ISC",
-    "homepage": "https://github.com/UNIZAR-30226-2023-10/CatanBackend",
+  "name": "catanbackend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "express": "^4.18.2",
+    "mongoose": "^6.1.5",
+    "mongoose-fuzzy-searching-v3": "^2.1.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.21"
   }
-
+}
