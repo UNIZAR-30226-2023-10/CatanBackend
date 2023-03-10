@@ -18,7 +18,8 @@ function generar_id() {
 }
 
 class Player {
-    constructor() { 
+    constructor(id) { 
+        this.id    = id;
         this.order = -1;   // Su turno para jugar (1->4).
         this.deck  = null; // Baraja del jugador:
                               //  - [0]: Total de madera.
@@ -37,46 +38,52 @@ class Player {
     }
 }
 
-function create_player(id) {
-    return new Player(id);
-}
-
-var nplayers = 0;
-var players  = {};
+var players = [];
 function add_player() {
-    if (nplayers < 4) {
+    if (players.length < 4) {
         let id = generar_id();
-        players[id] = create_player(id);
+        players.push(new Player(id));
         let list = document.getElementById('tabla-jugadores').getElementsByTagName('tbody')[0];
         let row  = list.insertRow();
         let cell = row.insertCell(0);
         cell.innerHTML = id;
-        cell = row.insertCell(1);
-        cell.innerHTML = 'Orden...';
-        console.log(players);
-        nplayers++;
     }
 }
 
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
 // La idea es que reciba el id, tire los dados en el backend y 
 // guarde la informacion del id.
-function simular_seleccion_orden() {0
-    let tiradas = [0,0,0,0];
+function simular_seleccion_orden() {
+    let rolls = [0,0,0,0];
     for (let i = 0; i < 4; i++) {
-        tiradas[i] = tirar_dados();
+        rolls[i] = tirar_dados();
     }
-    console.log(tiradas);
     players.sort(function(a,b) {
-        let idxA = tiradas.indexOf(jugadores.indexOf(b));
-        let idxB = tiradas.indexOf(jugadores.indexOf(a));
-
-        if (tiradas[idxA] === tiradas[idxB]) {
-            return Math.round(Math.random()) * 2 - 1;
+        let fst_roll = rolls[players.indexOf(a)];
+        let snd_roll = rolls[players.indexOf(b)];
+        if (fst_roll == snd_roll) {
+            return randInt(1,2);
         } else {
-            return tiradas[idxB] - tiradas[idxA];
+            return snd_roll - fst_roll;
         }
     });
-    console.log(players)
+    let list = document.getElementById('tabla-jugadores').getElementsByTagName('tbody')[0];
+    for (let i = 0; i < players.length; i++) {
+        list.rows[i].cells[0].textContent = players[i].id;
+    }
+}
+
+function generar_tablero() {
+    const container = document.getElementById('map-container');
+    const rows = 5;
+    const cols = [3,4,5,4,3];
+    //for (let i = 0; i < rows; i++) {
+    //    container
+    //}
+
 }
 
 //=============================================================================

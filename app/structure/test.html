@@ -3,6 +3,51 @@
   <head>
     <title>Generar terreno de Catan</title>
     <script src="config.js"></script>
+    <style>
+      .hexagon {
+        position: relative;
+        width: 100px;
+        height: 55px;
+        background-color: hsl(random(0, 360), random(50%, 100%), random(50%, 80%));
+        margin: 27.5px 0;
+      }
+
+      .hexagon::before, .hexagon::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        border-left: 50px solid transparent;
+        border-right: 50px solid transparent;
+      }
+
+      .hexagon::before {
+        bottom: 100%;
+        border-bottom: 27.5px solid hsl(random(0, 360), random(50%, 100%), random(50%, 80%));
+      }
+
+      .hexagon::after {
+        top: 100%;
+        width: 0;
+        border-top: 27.5px solid hsl(random(0, 360), random(50%, 100%), random(50%, 80%));
+      }
+
+      #map-container {
+        background-color: rgb(78, 169, 243);
+        margin: 50px;
+        padding: 50px;
+        border: 2px solid black;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .map-row {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: -29px;
+      }
+    </style>
   </head>
   <body onload="generate_board()">
     <h1>Generar terreno de Catan</h1>
@@ -24,6 +69,38 @@
     </table>
 
     <button onclick="simular_seleccion_orden()">Eleccion de orden</button>
+
+    <!--div id="map-container">
+      <div class="map-row">
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+      </div>
+      <div class="map-row">
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+      </div>
+      <div class="map-row">
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+      </div>
+      <div class="map-row">
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+      </div>
+      <div class="map-row">
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+        <div class="hexagon"></div>
+      </div>
+    </div-->
 
   </body>
 </html>
