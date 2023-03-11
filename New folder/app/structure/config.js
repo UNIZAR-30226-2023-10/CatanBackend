@@ -391,17 +391,105 @@ function select_order(id) {
     }
 }
 
+//comprueba si el nodo es valido
+function isValidNode(x, y) {
+    var validNodes = Object.keys(nodes);
+    return validNodes.includes(x.toString()+y.toString());
+}
+
 // 2. Poner poblados y carreteras:
 var current_turn = 0;
+
+//  Orden descendente
 function first_turn() {
     document.getElementById("cur_turn").value = players[current_turn].id;
+    const x = parseInt(playerCoords[0]);
+    const y = parseInt(playerCoords[1]);
+
+    while (!isValidNode(x, y)) {
+        alert("Invalid node! Please try again.");
+        x = parseInt(prompt("Enter x-coordinate:"));
+        y = parseInt(prompt("Enter y-coordinate:"));
+    }
+
+    let options;//opciones de contruir carretera
+
+    if (x % 2 === 0) {
+    options = [
+        { x: x + 1, y: y - 1 },
+        { x: x + 1, y: y + 1 },
+        { x: x, y: y + 1 }
+    ];
+    } else {
+    options = [
+        { x: x - 1, y: y - 1 },
+        { x: x - 1, y: y + 1 },
+        { x: x, y: y - 1 }
+    ];
+    }
+
+    const selectedOption = prompt("Selecciona una de las carreteras hacia la direción: " + options.join(", "));
+
+    current_turn++;
+    if (current_turn >= players.length) {
+        current_turn = players.length - 1;
+        second_turn();
+    }else{
+        first_turn();
+    }
 
 }
 
-function build_figure(coords, type) {
-
-}
-//  Orden descendente
 //  Orden ascendente
+
+function second_turn() {
+    document.getElementById("cur_turn").value = players[current_turn].id;
+    const x = parseInt(playerCoords[0]);
+    const y = parseInt(playerCoords[1]);
+
+    while (!isValidNode(x, y)) {
+        alert("Invalid node! Please try again.");
+        x = parseInt(prompt("Enter x-coordinate:"));
+        y = parseInt(prompt("Enter y-coordinate:"));
+    }
+    let c = x.toString() + y.toString();
+    build_figure(c, 1)//1 = poblado
+    
+    let options;//opciones de contruir carretera
+
+    if (x % 2 === 0) {
+    options = [
+        { x: x + 1, y: y - 1 },
+        { x: x + 1, y: y + 1 },
+        { x: x, y: y + 1 }
+    ];
+    } else {
+    options = [
+        { x: x - 1, y: y - 1 },
+        { x: x - 1, y: y + 1 },
+        { x: x, y: y - 1 }
+    ];
+    }
+
+    const selectedOption = prompt("Selecciona una de las carreteras hacia la direción: " + options.join(", "));
+    
+    bulld_road(c,selectedOption);//construye la carretera con las 2 nodos que une
+
+    current_turn--;
+    if (current_turn < 0) {
+        current_turn = 0;
+        normal_turn();
+    }else{
+        second_turn();
+    }
+
+}
+
+
+function build_figure(coords, type) {//se ocuparia de crear un poblado o la ciudad
+}
+//Rael: Creo que podriamos modificar el nodo para que ahora dicho nodo tenga un poblado construido por un jugador
+
+
 
 // 3. Recibir materias de los poblados puestos en orden ascendente.
