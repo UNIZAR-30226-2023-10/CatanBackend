@@ -6,7 +6,7 @@ const games = require('./game.model.js')
 mongoose.Promise = global.Promise
 
 const db = {
-    url: 'mongodb://localhost:27017/test',
+    url: 'mongodb://localhost:27017/catan',
     mongoose: mongoose,
     users: users,
     games: games,

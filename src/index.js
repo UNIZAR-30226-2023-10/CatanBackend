@@ -17,7 +17,7 @@ app.use('/api',require('./routes/index'));
 
 
 //conexion base de datos
-/*db.mongoose
+db.mongoose
     .connect(db.url)
     .then(() => {
         console.log('Connected to the database')
@@ -26,7 +26,7 @@ app.use('/api',require('./routes/index'));
         console.log('Cannot connect to the database! \n', err)
         process.exit()
     })
-*/
+
 //Iniciando el servidor
 app.listen(app.get('port'),()=>{
     console.log(`Server listening on port ${app.get('port')}`);
