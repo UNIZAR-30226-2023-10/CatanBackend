@@ -1,19 +1,22 @@
 
 /register
-/login
-/game/create
-/game/join
+/login -> responde token
+/game/create -> argumento num jugadores
+/game/join -> argumento idPartida
+/game/start -> argumento idPartida
 
 conn - [socketIO]
 jugador -[Jugador]
 
-llamada a crear partida(incluye primera tirada)
+llamada a CrearPartida(incluye primera tirada)
+
+back envia notify(comienzo)
 
 back -> guarda cambios, envia partidaActualizada a todos y envia las notificaciones
 
 juagador envia -> acccion, idPartida
 
-back -> coge Partida de la BD y se envia al modulo de juego(accion, partida, jugador)
+back -> coge Partida de la BD y se envia al moduloDeJuego(accion, partida, jugador)
 
 modulo juego devuelve -> (err, partidaActualizada, notify)
 
@@ -24,3 +27,6 @@ notify {
 }
 
 back -> guarda cambios, envia partidaActualizada a todos y envia las notificaciones
+
+send(evento, argumentos)
+lisener(evento, callback(argumentos))
