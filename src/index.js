@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const db = require('./models/index.js')
+const server = require("http").Server(app);
+const Socket = require('./sockets/index');
 
 const API_PORT = process.env.PORT || 8080
 //Configuraciones
@@ -15,8 +17,12 @@ app.use(morgan(':method :url :body - :status'))
 //Routes
 app.use('/api',require('./routes/index'));
 
+//Sockets
+Socket.start(server)
+
 
 //conexion base de datos
+/*
 db.mongoose
     .connect(db.url)
     .then(() => {
@@ -26,8 +32,8 @@ db.mongoose
         console.log('Cannot connect to the database! \n', err)
         process.exit()
     })
-
+*/
 //Iniciando el servidor
-app.listen(app.get('port'),()=>{
+server.listen(app.get('port'),()=>{
     console.log(`Server listening on port ${app.get('port')}`);
 });

@@ -1,9 +1,9 @@
 const { Router } = require('express')
-const { TopologyDescription } = require('mongodb')
-const { notify } = require('./auth.routes')
+const Game = require("../controllers/game.controller")
 const GameRouter = Router()
 
-GameRouter.use('create', Game.create)//crea partida y genera un codigo
-GameRouter.use('join' Game.join)
+GameRouter.use('create', Game.create)
+GameRouter.use('join', Game.join)
+GameRouter.use('star' , Game.start)
 module.exports = GameRouter
 
