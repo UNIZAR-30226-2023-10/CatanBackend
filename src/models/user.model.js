@@ -24,22 +24,6 @@ const UserSchema = mongoose.Schema({
                             type: String,
                             required: true,
                         },
-                        following: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'User',
-                        },
-                        followers: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'User',
-                        },
-                        posts: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'Post',
-                        },
-                        timeline: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'Post',
-                        }
                     })
 
 UserSchema.pre('save', function (next) {

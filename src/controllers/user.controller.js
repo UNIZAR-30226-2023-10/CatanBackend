@@ -1,7 +1,7 @@
 
 
 const { response } = require ('express')
-const PostModel = require ('../models/post.model.js')
+
 const UserModel = require ('../models/user.model.js')
 const Session = require ('./session.controller.js')
 
@@ -50,20 +50,9 @@ const User = {
         
         let respuesta = []
 
-        for( let user of users ) {
-            // devolver todos los usuarios menos a si
-            if (user.username !== me.username) {
-                let aux = {
-                    username: user.username,
-                    isFollow: me.following.includes(user._id),
-                }
-                respuesta.push(aux)
-            }
-        }
-
         return res.status(200).json(respuesta)
 
     },
 }
 
-export default User
+module.exports =  User

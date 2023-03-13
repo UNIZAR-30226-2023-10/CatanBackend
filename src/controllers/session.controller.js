@@ -1,11 +1,10 @@
 
 const db = require( '../models/index.js')
 const UserModel = require( '../models/user.model.js')
-const { jwt_secret } = require( '../config/jwt.config.js')
 const bcrypt = require( 'bcrypt')
 const jwt = require( 'jsonwebtoken')
 
-
+const jwt_secret = '123456'
 
 const Session = {
     async create(req, res) {
