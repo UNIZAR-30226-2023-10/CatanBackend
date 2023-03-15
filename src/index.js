@@ -34,13 +34,6 @@ const Socket = require('./sockets/index');
 // Sockets: inicia una conexión socket.io en el servidor.
 Socket.start(server)
 
-<<<<<<< HEAD
-=======
-//conexion base de datos
-/*
-// Modelo para el manejo de la base de datos.
-const db = require('./models/index.js')
->>>>>>> 90054b5dad82d53bb9557c05e53f9dea2c4964b9
 db.mongoose
     .connect(db.uri)
     .then(() => {
@@ -50,31 +43,7 @@ db.mongoose
         console.log('Cannot connect to the database! \n', err)
         process.exit()
     })
-<<<<<<< HEAD
 //Iniciando el servidor
 server.listen(app.get('port'),()=>{
     console.log(`Server listening on port ${app.get('port')}`);
 });
-=======
-*/
-
-app.get('/', (req, res) => {
-    return res.send(`
-    <style>
-        .EasterEgg {
-            width: 100%;
-            height: 100%;
-            line-height: 100px;
-            text-align: center;
-        }
-    </style>
-    <div class='EasterEgg'>
-        What are you doing here?
-    </div>
-    `);
-})
-
-server.listen(app.get('port'), () => 
-    console.log(`Server listening on port ${app.get('port')}`)
-);
->>>>>>> 90054b5dad82d53bb9557c05e53f9dea2c4964b9
