@@ -3,7 +3,7 @@ const { verifyToken } = require( '../utils/auth')
 
 const router = Router()
 const AuthRouter = require('./auth.routes')
-const GameRouter = require('./auth.routes')
+const GameRouter = require('./game.routes')
 
 router.use('/', AuthRouter)
 router.use('/game', verifyToken, GameRouter)

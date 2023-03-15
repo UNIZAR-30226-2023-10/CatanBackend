@@ -9,6 +9,9 @@ const API_PORT = process.env.PORT || 8080
 //Configuraciones
 app.set('port',  API_PORT );
 app.set('json spaces', 2)
+app.disable('etag')
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 //Logging middleware
 morgan.token('body', (req, _res) => JSON.stringify(req.body))
@@ -21,10 +24,8 @@ app.use('/api',require('./routes/index'));
 Socket.start(server)
 
 
-//conexion base de datos
-/*
 db.mongoose
-    .connect(db.url)
+    .connect(db.uri)
     .then(() => {
         console.log('Connected to the database')
     })
@@ -32,7 +33,6 @@ db.mongoose
         console.log('Cannot connect to the database! \n', err)
         process.exit()
     })
-*/
 //Iniciando el servidor
 server.listen(app.get('port'),()=>{
     console.log(`Server listening on port ${app.get('port')}`);

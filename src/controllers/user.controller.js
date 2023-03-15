@@ -9,6 +9,7 @@ const User = {
 
     async create(req, res) {       
         try {
+            console.log (req.body)
             if (req.body.password == req.body.confirm_password) {
                 let NewUser = new UserModel({
                     username: req.body.username,

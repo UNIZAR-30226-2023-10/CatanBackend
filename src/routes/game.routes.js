@@ -2,8 +2,9 @@ const { Router } = require('express')
 const Game = require("../controllers/game.controller")
 const GameRouter = Router()
 
-GameRouter.use('create', Game.create)
-GameRouter.use('join', Game.join)
-GameRouter.use('star' , Game.start)
+GameRouter.post('/create', Game.create)
+GameRouter.post('/join', Game.join)
+GameRouter.post('/start' , Game.start)
+
 module.exports = GameRouter
 
