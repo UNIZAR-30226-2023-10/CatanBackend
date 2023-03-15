@@ -1,0 +1,101 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "CatanAPI",
+    "dateExported": "2023-03-15T17:24:54.441Z",
+    "version": "1.1",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "a4f9730b-6fab-4f3e-93c3-a266ab6002db",
+            "colId": "6fbba205-ae7b-4b74-bced-41d43c0113d5",
+            "containerId": "",
+            "name": "Login",
+            "url": "localhost:8080/api/login",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-03-15T17:11:05.797Z",
+            "modified": "2023-03-15T17:17:49.571Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"asdasd@asds.com\",\n  \"password\": \"12345\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "9d77caca-7a30-4009-af7d-dd090d478160",
+            "colId": "6fbba205-ae7b-4b74-bced-41d43c0113d5",
+            "containerId": "",
+            "name": "Register",
+            "url": "localhost:8080/api/register",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2023-03-15T17:12:18.058Z",
+            "modified": "2023-03-15T17:16:16.178Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"asdasd@asds.com\",\n  \"username\": \"user2\",\n  \"password\": \"12345\",\n  \"confirm_password\": \"12345\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "e28a6223-7e17-4414-b871-b46a650f7c9d",
+            "colId": "6fbba205-ae7b-4b74-bced-41d43c0113d5",
+            "containerId": "",
+            "name": "Create Game",
+            "url": "localhost:8080/api/game/create",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2023-03-15T17:19:07.282Z",
+            "modified": "2023-03-15T17:20:24.217Z",
+            "headers": [],
+            "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTFmZDVmYTNmNmRiNjM2NGQ3NjliMCIsImlhdCI6MTY3ODkwMDY3MX0.dUx-LKDgoesQCdlceh3FSET1NKMfJ3vT7mZyxqpPyl0"
+            },
+            "tests": []
+        },
+        {
+            "_id": "57e90d08-ce4a-4595-af3f-01c73b282c53",
+            "colId": "6fbba205-ae7b-4b74-bced-41d43c0113d5",
+            "containerId": "",
+            "name": "Join Game",
+            "url": "localhost:8080/api/game/join",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2023-03-15T17:21:02.170Z",
+            "modified": "2023-03-15T17:21:31.927Z",
+            "headers": [],
+            "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTFmZDVmYTNmNmRiNjM2NGQ3NjliMCIsImlhdCI6MTY3ODkwMDY3MX0.dUx-LKDgoesQCdlceh3FSET1NKMfJ3vT7mZyxqpPyl0"
+            },
+            "tests": []
+        },
+        {
+            "_id": "6593613d-bafe-410f-8fa4-b4073116ea29",
+            "colId": "6fbba205-ae7b-4b74-bced-41d43c0113d5",
+            "containerId": "",
+            "name": "Start Game",
+            "url": "localhost:8080/api/game/start",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2023-03-15T17:21:46.885Z",
+            "modified": "2023-03-15T17:22:18.775Z",
+            "headers": [],
+            "params": [],
+            "auth": {
+                "type": "bearer",
+                "bearer": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTFmZDVmYTNmNmRiNjM2NGQ3NjliMCIsImlhdCI6MTY3ODkwMDY3MX0.dUx-LKDgoesQCdlceh3FSET1NKMfJ3vT7mZyxqpPyl0"
+            },
+            "tests": []
+        }
+    ]
+}
