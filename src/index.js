@@ -4,7 +4,6 @@ const app = express();
 const morgan = require('morgan');
 const db = require('./models/index.js')
 const server = require("http").Server(app);
-const Socket = require('./sockets/index');
 
 const API_PORT = process.env.PORT || 8080
 //Configuraciones
@@ -20,14 +19,6 @@ app.use(morgan(':method :url :body - :status'))
 
 //Routes
 app.use('/api',require('./routes/index'));
-
-// Logging middleware
-//  Importar morgan.
-const morgan = require('morgan');
-//  Transforma el cuerpo de la peticion en un JSON.
-morgan.token('body', (req, _res) => JSON.stringify(req.body))
-//  Indica la información que se registrará de las solicitudes entrantes.
-app.use(morgan(':method :url :body - :status'))
 
 // Modelo para el manejo de Sockets.
 const Socket = require('./sockets/index');
