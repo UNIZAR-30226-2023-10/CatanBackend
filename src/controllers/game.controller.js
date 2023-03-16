@@ -1,5 +1,7 @@
 const GamesModel = require('../models/game.model')
 const UsersModel = require('../models/user.model')
+// TODO : importar jugabilidad
+// const CatanModule = require() 
 const max = 999999
 const min = 100000
 
@@ -25,13 +27,14 @@ const Game = {
             let game = new GamesModel({
                 codigo_partida : codigoPartida,
                 anfitrion : res.locals.decoded.id,
-                jugador1: res.locals.decoded.id
+                jugadores: [res.locals.decoded.id],
+                comenzada : false
             })
             game = await game.save()
 
             //devolvemos el codigo de partida
             return res.status(200).json({
-                idPartida : game._id,
+                status: 'sussces',
                 codigo_partida : game.codigo_partida
             })
 
@@ -46,6 +49,42 @@ const Game = {
         return res.status(203).json({})
         try {
 
+            // comprobamos si se hay codigo de partida
+            if(!req.body.codigo_partida){
+                return res.status(300).json({
+                    error : 'Se necesita un codigo de partida'
+                })
+            }  
+
+            // comprobamos si existe la partida con el codigo enviado
+
+            let game = await GamesModel.findOne({
+                codigo_partida : req.body.codigo_partida
+            })
+
+            if (game){
+                //comprobamos si la partida esta llena
+                //y si no ha empezado
+                if (game.jugadores.lenght < 4 && !game.comenzada) {
+                    //se anyade el jugador a la partida
+                    game.jugadores.push(res.locals.decoded.id)
+                    await game.save()
+                    return res.status(200).json({status: 'sussces'})
+                }
+                else {
+                    return res.status(300).json({
+                        error : 'Partida llena'
+                    })
+
+                }
+            }
+            else {
+                return res.status(300).json({
+                    error : 'Codigo no encontrado'
+                })
+            }
+            
+            
         }
         catch(e){
              res.status(500).json(err)
@@ -56,6 +95,37 @@ const Game = {
         console.log("start")
         return  res.status(204).json({})
         try {
+            if(!req.body.codigo_partida){
+                return res.status(300).json({
+                    error : 'Se necesita un codigo de partida'
+                })
+            }  
+
+            // comprobamos si existe la partida con el codigo enviado
+
+            let game = await GamesModel.findOne({
+                codigo_partida : req.body.codigo_partida
+            })
+
+            if (game){
+                //comprobamos si hay suficientes jugadores 
+                if (game.jugadores.lenght > 2) {
+                    // game.partida = CatanModule.CrearPartida(game.jugadores)
+                    game.comenzada = true 
+                    game.save()
+                }
+                else {
+                    return res.status(300).json({
+                        error : 'Se necesitan jugadores'
+                    })
+
+                }
+            }
+            else {
+                return res.status(300).json({
+                    error : 'Codigo no encontrado'
+                })
+            }
 
         }
         catch(e){
