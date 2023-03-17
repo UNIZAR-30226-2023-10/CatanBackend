@@ -1,5 +1,6 @@
+//import { jwt_secret } from '../config/jwt.config'
 const jwt_secret  = '123456'
-const jwt = require( 'jsonwebtoken')
+const jwt = require('jsonwebtoken')
 
 function verifyToken(req, res, next) {
     if (!req.headers.authorization) {
@@ -28,4 +29,5 @@ function verifyToken(req, res, next) {
     next()
 }
 
+// export { verifyToken } 
 module.exports = {verifyToken }

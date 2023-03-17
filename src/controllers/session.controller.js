@@ -5,6 +5,7 @@ const bcrypt = require( 'bcrypt')
 const jwt = require( 'jsonwebtoken')
 
 const jwt_secret = '123456'
+// import { jwt_secret } from '../config/jwt.config.js'
 
 const Session = {
     async create(req, res) {
@@ -107,6 +108,15 @@ const Session = {
         }
     },
     async delete(req, res) {},
+    /* De la vieja carpeta:
+    async login(req, res) {
+        res.json(
+            {
+                "Title": "Login"
+            }
+        );
+    },
+    */
 }
 
 module.exports =  Session
