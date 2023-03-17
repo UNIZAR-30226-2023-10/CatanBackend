@@ -290,9 +290,14 @@ game = {
                 roads: new Set(),
                 resources : { Trigo:0, Madera:0, Ladrillo:0, Piedra:0, Lana:0 },
                 growth_cards: {
+                    Puntos: 0,
+                    Cartas_Carreteras: 0,
+                    Monopolios: 0,
+                    Descubrimientos: 0,
                     Caballero: 30,
-                    Caballeros_usados: 0
+                    Caballeros_usados: 0 //TODO: Yo sacaria este valor fuera de growth_cards
                 },
+                tiradaInicial: 0,
             })
         }
         return players
@@ -311,7 +316,7 @@ game = {
  * @param {*} player    Estructura jugador recibida.
  * @returns 
  */
-function total_resources(player) {
+function total_resources(player) {//TODO:Player no deberia ser el id??
     let total = 0
     for (let resource of Object.values(player.resources)) {
         total += resource
@@ -319,18 +324,9 @@ function total_resources(player) {
     return total
 }
 
-/**
- * Función auxiliar. Calcula el número de cartas totales del jugador.
- * 
- * @param {*} player    Estructura jugador recibida.
- * @returns 
- */
-function poblar_desarrollos(game) {
-
-    for (let resource of Object.values(player.resources)) {
-        total += resource
-    }
-    return total
+function tirada_inicial(game,id){
+    let index = game.players.findIndex(player => player.id === id)
+    game.players[index].tiradaInicial= random(1, 6) + random(1, 6)
 }
 
 
@@ -525,6 +521,9 @@ function build_city(game, id, coords, phase) {
 function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
     let index = game.players.findIndex(player => player.id === id)
     let rcoor = coor_to_string(coords[0].x, coords[0].y) + ":" + coor_to_string(coords[0].x, coords[0].y);
+    // COSTO: Madera=1, Ladrillo=1
+    game.players[index].resources['Madera']--
+    game.players[index].resources['Ladrillo']--
 
     game.board.roads[rcoor].id = id
     game.players[index].roads.add(rcoor)
@@ -533,16 +532,106 @@ function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
     }
 }
 
+//let cartasDesarrollo_num = [14, 2, 2, 2, 5]
+//const cartasDesarrollo = ['Caballero', 'Carreteras', 'Monopolio', 'Descubrimiento', 'Punto']
+
+function barajar_desarrollos(game) {
+    let randomNumber = 0;
+    let numCards = 25;
+    for(let i = 0; i < 25; i++){
+        randomNumber = Math.floor(Math.random() * numCards);
+        numCards--;
+        if(randomNumber < cartasDesarrollo_num[0]){//Coloca caballero
+            cartasDesarrollo_num[0]--;
+            cartas_desarrollo.push(cartasDesarrollo[0]);
+        }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1])){//Coloca Carreteras
+            cartasDesarrollo_num[1]--;
+            cartas_desarrollo.push(cartasDesarrollo[1]);
+        }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1]+cartasDesarrollo_num[2])){//Coloca Monopolio
+            cartasDesarrollo_num[2]--;
+            cartas_desarrollo.push(cartasDesarrollo[2]);
+        }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1]+cartasDesarrollo_num[2]+cartasDesarrollo_num[3])){//Coloca Descubrimiento
+            cartasDesarrollo_num[3]--;
+            cartas_desarrollo.push(cartasDesarrollo[3]);
+        }else { //Coloca Punto
+            cartasDesarrollo_num[4]--;
+            cartas_desarrollo.push(cartasDesarrollo[4]);
+        }
+    }
+}
+
 /**
  * Función para comprar una carta de desarrollo. Esta función SOLO SE LLAMA cuando se sabe
- * de antemano que tiene los recursos necesarios.
+ * de antemano que tiene los recursos necesarios y quedan cartas de desarrollo disponibles.
  * 
  * @param {*} game      Partida sobre la que transcurre el juego.
  * @param {*} id        Jugador que ha pedido construir.
  */
 function buy_cards(game, id) {
     let index = game.players.findIndex(player => player.id === id)
+    let card = cartas_desarrollo.shift();   //Sacamos la primera carta del vector
+    game.players[index].resources['Grano']--
+    game.players[index].resources['Piedra']--
+    game.players[index].resources['Lana']--
+    if(card == 'Caballero'){
+        game.players[index].growth_cards.Caballeros;
+    }else if(card == 'Descubrimiento'){
+        game.players[index].growth_cards.Descubrimientos;
+    }else if(card == 'Carreteras'){
+        game.players[index].growth_cards.Cartas_Carreteras;
+    }else if(card == 'Monopolio'){
+        game.players[index].growth_cards.Monopolios;
+    }else if(card == 'Punto'){
+        game.players[index].growth_cards.Puntos++;
+    }
+
 }
+
+function usar_monopolio(game, id, materia) {
+    let index = game.players.findIndex(player => player.id === id)
+    game.players[index].growth_cards.Monopolios--
+    let res = 0;
+    for(let i = 0; i < game.players.length; i++){
+        res += game.players[i].resources[materia]
+        game.players[i].resources[materia]=0
+    }
+    game.players[index].resources[materia]=res
+}
+
+function usar_descubrimiento(game, id, materia1, materia2) {
+    let index = game.players.findIndex(player => player.id === id)
+    game.players[index].growth_cards.Descubrimientos--
+    game.players[index].resources[materia1]++
+    game.players[index].resources[materia2]++
+}
+
+function usar_caballero(game, id, hexagono, idJugadorRobar) {
+    let index = game.players.findIndex(player => player.id === id)
+    game.players[index].growth_cards.Caballeros--
+    game.players[index].growth_cards.Caballeros_usados++
+    game.board.thief_biome=hexagono
+    let index2 = game.players.findIndex(player => player.id === idJugadorRobar)
+
+    let randomNumber = Math.floor(Math.random() * total_resources(idJugadorRobar));
+
+    if(randomNumber < game.players[index2].resources['Grano']){//Coloca caballero
+        game.players[index2].resources['Grano']--;
+        game.players[index].resources['Grano']++;
+    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera'])){//Coloca Carreteras
+        game.players[index2].resources['Madera']--;
+        game.players[index].resources['Madera']++;
+    }else if(randomNumber <  (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo'])){//Coloca Monopolio
+        game.players[index2].resources['Ladrillo']--;
+        game.players[index].resources['Ladrillo']++;
+    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo']+game.players[index2].resources['Piedra'])){//Coloca Descubrimiento
+        game.players[index2].resources['Piedra']--;
+        game.players[index].resources['Piedra']++;
+    }else { //Coloca Punto
+        game.players[index2].resources['Lana']--;
+        game.players[index].resources['Lana']++;
+    }
+}
+
 
 //console.log('BEFORE BUILDING VILLAGE:')
 //for (let i = 0; i < 4; i++) {
