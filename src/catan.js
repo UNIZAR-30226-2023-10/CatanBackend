@@ -46,7 +46,7 @@ class partida {
 // == BOARD
 // Terraformación de biomas:
 // 1. Tierra de cultivo/Grano   4
-// 2. Bosque/Madera               4
+// 2. Bosque/Madera             4
 // 3. Colinas/Ladrillo          3
 // 4. Montañas/Piedra           3
 // 5. Pasto/Lana                4
@@ -54,10 +54,12 @@ class partida {
 const biome_terraform    = [4, 4, 3, 3, 4, 1]
 const biome_names        = ['Cultivo','Bosque','Colina','Montaña','Pasto','Desierto']
 const biome_resources    = ['Grano','Madera','Ladrillo','Piedra','Lana', 'Caballero']
-const biome_token_starts = [0, 2 ,4 ,6 ,8 ,10]
+const biome_token_starts = [0, 2, 4, 6, 8, 10]
 // Fichas numericas ------- A  B  C  D  E  F   G  H   I   J  K  L   M  N  O  P  Q  R
 const biome_token_values = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
 const borders = [[3,7],[2,8],[2,8],[1,9],[1,9],[0,10],[0,10],[1,9],[1,9],[2,8],[2,8],[3,7]];
+const cartasDesarrollo = ['Caballeros', 'Carreteras', 'Monopolio', 'Descubrimiento', 'Punto']
+const cartasDesarrollo_num = [14, 2, 2, 2, 5]
 
 function create_board() {
     // Generar hexagonos:
@@ -89,60 +91,60 @@ function create_board() {
 
     // Generar nodos:
     let nodes = {
-        '0,3'  : { building: null, biomes:[biomes[0]]},
-        '0,5'  : { building: null, biomes:[biomes[1]]},
-        '0,7'  : { building: null, biomes:[biomes[2]]},
-        '1,2'  : { building: null, biomes:[biomes[0]]},
-        '1,4'  : { building: null, biomes:[biomes[0],biomes[1]]},
-        '1,6'  : { building: null, biomes:[biomes[1],biomes[2]]},
-        '1,8'  : { building: null, biomes:[biomes[2]]},
-        '2,2'  : { building: null, biomes:[biomes[0],biomes[11]]},
-        '2,4'  : { building: null, biomes:[biomes[0],biomes[1],biomes[12]]},
-        '2,6'  : { building: null, biomes:[biomes[1],biomes[2],biomes[13]]},
-        '2,8'  : { building: null, biomes:[biomes[2],biomes[3]]},
-        '3,1'  : { building: null, biomes:[biomes[11]]},
-        '3,3'  : { building: null, biomes:[biomes[0],biomes[11],biomes[12]]},
-        '3,5'  : { building: null, biomes:[biomes[1],biomes[12],biomes[13]]},
-        '3,7'  : { building: null, biomes:[biomes[2],biomes[13],biomes[3]]},
-        '3,9'  : { building: null, biomes:[biomes[3]]},
-        '4,1'  : { building: null, biomes:[biomes[11],biomes[10]]},
-        '4,3'  : { building: null, biomes:[biomes[11],biomes[12],biomes[17]]},
-        '4,5'  : { building: null, biomes:[biomes[12],biomes[13],biomes[18]]},
-        '4,7'  : { building: null, biomes:[biomes[13],biomes[3],biomes[14]]},
-        '4,9'  : { building: null, biomes:[biomes[3],biomes[4]]},
-        '5,0'  : { building: null, biomes:[biomes[10]]},
-        '5,2'  : { building: null, biomes:[biomes[11],biomes[10],biomes[17]]},
-        '5,4'  : { building: null, biomes:[biomes[12],biomes[17],biomes[18]]},
-        '5,6'  : { building: null, biomes:[biomes[13],biomes[18],biomes[14]]},
-        '5,8'  : { building: null, biomes:[biomes[3],biomes[14],biomes[4]]},
-        '5,10' : { building: null, biomes:[biomes[4]]},
-        '6,0'  : { building: null, biomes:[biomes[10]]},
-        '6,2'  : { building: null, biomes:[biomes[10],biomes[17],biomes[9]]},
-        '6,4'  : { building: null, biomes:[biomes[17],biomes[18],biomes[16]]},
-        '6,6'  : { building: null, biomes:[biomes[18],biomes[14],biomes[15]]},
-        '6,8'  : { building: null, biomes:[biomes[14],biomes[4],biomes[5]]},
-        '6,10' : { building: null, biomes:[biomes[4]]},
-        '7,1'  : { building: null, biomes:[biomes[10],biomes[9]]},
-        '7,3'  : { building: null, biomes:[biomes[17],biomes[9],biomes[16]]},
-        '7,5'  : { building: null, biomes:[biomes[18],biomes[16],biomes[15]]},
-        '7,7'  : { building: null, biomes:[biomes[14],biomes[15],biomes[5]]},
-        '7,9'  : { building: null, biomes:[biomes[4],biomes[5]]},
-        '8,1'  : { building: null, biomes:[biomes[9]]},
-        '8,3'  : { building: null, biomes:[biomes[9],biomes[16],biomes[8]]},
-        '8,5'  : { building: null, biomes:[biomes[16],biomes[15],biomes[7]]},
-        '8,7'  : { building: null, biomes:[biomes[15],biomes[5],biomes[6]]},
-        '8,9'  : { building: null, biomes:[biomes[5]]},
-        '9,2'  : { building: null, biomes:[biomes[9],biomes[8]]},
-        '9,4'  : { building: null, biomes:[biomes[16],biomes[8],biomes[7]]},
-        '9,6'  : { building: null, biomes:[biomes[15],biomes[7],biomes[6]]},
-        '9,8'  : { building: null, biomes:[biomes[5],biomes[6]]},
-        '10,2' : { building: null, biomes:[biomes[8]]},
-        '10,4' : { building: null, biomes:[biomes[8],biomes[7]]},
-        '10,6' : { building: null, biomes:[biomes[7],biomes[6]]},
-        '10,8' : { building: null, biomes:[biomes[6]]},
-        '11,3' : { building: null, biomes:[biomes[8]]},
-        '11,5' : { building: null, biomes:[biomes[7]]},
-        '11,7' : { building: null, biomes:[biomes[6]]},
+        '0,3'  : { building: null, biomes:[0]},
+        '0,5'  : { building: null, biomes:[1]},
+        '0,7'  : { building: null, biomes:[2]},
+        '1,2'  : { building: null, biomes:[0]},
+        '1,4'  : { building: null, biomes:[0,1]},
+        '1,6'  : { building: null, biomes:[1,2]},
+        '1,8'  : { building: null, biomes:[2]},
+        '2,2'  : { building: null, biomes:[0,11]},
+        '2,4'  : { building: null, biomes:[0,1,12]},
+        '2,6'  : { building: null, biomes:[1,2,13]},
+        '2,8'  : { building: null, biomes:[2,3]},
+        '3,1'  : { building: null, biomes:[11]},
+        '3,3'  : { building: null, biomes:[0,11,12]},
+        '3,5'  : { building: null, biomes:[1,12,13]},
+        '3,7'  : { building: null, biomes:[2,13,3]},
+        '3,9'  : { building: null, biomes:[3]},
+        '4,1'  : { building: null, biomes:[11,10]},
+        '4,3'  : { building: null, biomes:[11,12,17]},
+        '4,5'  : { building: null, biomes:[12,13,18]},
+        '4,7'  : { building: null, biomes:[13,3,14]},
+        '4,9'  : { building: null, biomes:[3,4]},
+        '5,0'  : { building: null, biomes:[10]},
+        '5,2'  : { building: null, biomes:[11,10,17]},
+        '5,4'  : { building: null, biomes:[12,17,18]},
+        '5,6'  : { building: null, biomes:[13,18,14]},
+        '5,8'  : { building: null, biomes:[3,14,4]},
+        '5,10' : { building: null, biomes:[4]},
+        '6,0'  : { building: null, biomes:[10]},
+        '6,2'  : { building: null, biomes:[10,17,9]},
+        '6,4'  : { building: null, biomes:[17,18,16]},
+        '6,6'  : { building: null, biomes:[18,14,15]},
+        '6,8'  : { building: null, biomes:[14,4,5]},
+        '6,10' : { building: null, biomes:[4]},
+        '7,1'  : { building: null, biomes:[10,9]},
+        '7,3'  : { building: null, biomes:[17,9,16]},
+        '7,5'  : { building: null, biomes:[18,16,15]},
+        '7,7'  : { building: null, biomes:[14,15,5]},
+        '7,9'  : { building: null, biomes:[4,5]},
+        '8,1'  : { building: null, biomes:[9]},
+        '8,3'  : { building: null, biomes:[9,16,8]},
+        '8,5'  : { building: null, biomes:[16,15,7]},
+        '8,7'  : { building: null, biomes:[15,5,6]},
+        '8,9'  : { building: null, biomes:[5]},
+        '9,2'  : { building: null, biomes:[9,8]},
+        '9,4'  : { building: null, biomes:[16,8,7]},
+        '9,6'  : { building: null, biomes:[15,7,6]},
+        '9,8'  : { building: null, biomes:[5,6]},
+        '10,2' : { building: null, biomes:[8]},
+        '10,4' : { building: null, biomes:[8,7]},
+        '10,6' : { building: null, biomes:[7,6]},
+        '10,8' : { building: null, biomes:[6]},
+        '11,3' : { building: null, biomes:[8]},
+        '11,5' : { building: null, biomes:[7]},
+        '11,7' : { building: null, biomes:[6]},
     }
 
     // Generar aristas:
@@ -198,7 +200,7 @@ function create_board() {
         thief_biome: -1,
         nodes: nodes,
         roads: edges,
-        buildings: []
+        buildings: new Set()
     }
 }
 
@@ -231,6 +233,48 @@ function create_board() {
     }
 */
 
+
+// Primer turno:
+/*
+function next_turn(game, id, phase) {
+    let index = game.players.findIndex(player => player.id === id)  
+    if (phase === 0) {                                                                  //Primera ronda, solo de construccion
+        // Primera ronda
+        build_village(game, id,coords, phase);                                          //Construye el primer poblado
+        build_road(game,id,coords);                                                     //Construye la primera carretera
+        
+        if(index==3){                                                                   //Pasa a la segunda ronda
+            next_turn(game,id,1);
+        }else{                                                                          //Pasa el turno para la primera ronda                                   
+            next_turn(game,jugadores[id+1],0);
+        }
+
+    } else if (phase === 1) {                                                           //Segunda ronda, solo contruccion. Recibe recursos por la contruccion del poblado
+        // Segunda ronda
+        build_village(game, id,coords, phase);                                          //Construye el segundo poblado
+        build_road(game,id,coords);                                                     //Construye la segunda carretera
+        for(let i = 0; i < nodes[coords].biomes.length; i++){                           
+            game.players[index].resources[biome_resources[nodes[coords].biomes[i]]]++   //Roba materia prima
+        }
+        if(index==0){                                                                   //Pasa al turno normal    
+            next_turn(game,id,2);
+        }else{                                                                          //Pasa el turno para la segunda ronda
+            next_turn(game,jugadores[id-1],0);                                          
+        }
+
+    } else {                                                                            //TODO: Primera version sin opciones de usar antes caballero???
+        if(index==3){                                                                   //TODO: Comprobar si hay ganador al finalizar el turno???
+            next_turn(game,jugadores[0],2)
+        }else{
+            next_turn(game,jugadores[index+1],2) 
+        }
+        
+        // Resto de la partida igual
+    }
+}
+
+*/
+// ---
 board = create_board()
 ids   = ["Jkilo90o", "XXXZ89xx", "45TRej23", "5ty62sw1"]
 //console.log(board)
@@ -246,14 +290,18 @@ game = {
                 villages: new Set(),
                 cities: new Set(),
                 roads: new Set(),
-                resources : { Grano: 2, Madera:2, Ladrillo:2, Piedra:2, Lana:2, Caballero: 3 }
-                // cartas_desarrollo: (???)
+                resources : { Grano: 20, Madera:20, Ladrillo:20, Piedra:20, Lana:20 },
+                growth_cards: {
+                    Caballero: 30,
+                    Caballeros_usados: 0
+                },
             })
         }
         return players
     })(),
     board: board,
-    current_turn: -1
+    current_turn: 0,
+    cartas_desarrollo: []
 }
 //console.log(game)
 
@@ -273,6 +321,21 @@ function total_resources(player) {
 }
 
 /**
+ * Función auxiliar. Calcula el número de cartas totales del jugador.
+ * 
+ * @param {*} player    Estructura jugador recibida.
+ * @returns 
+ */
+function poblar_desarrollos(game) {
+
+    for (let resource of Object.values(player.resources)) {
+        total += resource
+    }
+    return total
+}
+
+
+/**
  * Funcion para tirar los dados:
  *  1. El jugador ha de decidir tirar los datos (pulsar el boton).
  *  2. Se tiran los dados:
@@ -282,23 +345,27 @@ function total_resources(player) {
  * @param {*} game  Partida sobre la que se juega.
  * @param {*} id    Jugador que ha decidido tirar los dados.
  */
-function roll_dices(game, id) {
-    if ((random(1, 6) + random(1, 6)) !== 7) {
-        let index = game.players.findIndex(player => player.id === id)
-        console.log(game.players[index].villages)
-        for (let building of game.players[index].villages) {
-            game.board.nodes[building].biomes.forEach(function(biome) {
-                if (biome.token === res) {
-                    game.players[index].resources[biome.resource]++
-                }
-            });
-        }
-        for (let building of game.players[index].cities) {
-            game.board.nodes[building].biomes.forEach(function(biome) {
-                if (biome.token === res) {
-                    game.players[index].resources[biome.resource] += 2
-                }
-            })
+function roll_dices(game) {
+    let res = random(1, 6) + random(1, 6)
+    if (res !== 7) {
+        //let index = game.players.findIndex(player => player.id === id)
+        //console.log(game.players[index].villages)
+        // Roban todos (los que cumplan la condicion) --->
+        for(let i = 0; i < 4; i++){
+            for (let building of game.players[i].villages) {
+                game.board.nodes[building].biomes.forEach(function(biome) {
+                    if (biome.token === res) {
+                        game.players[i].resources[game.board.biomes[biome].resource]++
+                    }
+                });
+            }
+            for (let building of game.players[i].cities) {
+                game.board.nodes[building].biomes.forEach(function(biome) {
+                    if (biome.token === res) {
+                        game.players[i].resources[game.board.biomes[biome].resource] += 2
+                    }
+                })
+            }
         }
     } else {
         for (let i = 0; i < 4; i++) {
@@ -325,9 +392,9 @@ function roll_dices(game, id) {
  * @param {*} id        Jugador que ha pedido construir.
  * @param {{x:any, y:any}} coords    Coordenadas del nodo donde construir.
  */
-function build_village(game, id, coords) {
+function build_village(game, id, coords, phase) {
     let index = game.players.findIndex(player => player.id === id)
-    let x = coords.x, y = coords.y, ncoor = coor_to_string(x,y)
+    let x = coords.x, y = coords.y, ncoor = coor_to_string(x,y), mcoor = ""
 
     game.board.nodes[ncoor].building = { player: id, type: 'Village' }
     game.players[index].villages.add(ncoor)
@@ -336,27 +403,34 @@ function build_village(game, id, coords) {
     game.players[index].resources['Madera']--
     game.players[index].resources['Ladrillo']--
     game.players[index].resources['Lana']--
+    
     // Adding new roads:
-    if (x % 2 === 0) {
-        if (x-1 > 0) {
-            game.players[index].free_roads.add(ncoor + ":" + coor_to_string(x-1, y))
+    if (x % 2 === 0) {  //TODO: Carretera ya creada
+        mcoor = ncoor + ":" + coor_to_string(x-1, y)
+        if (x-1 > 0 && game.board.roads[mcoor] == null) {
+            game.players[index].free_roads.add(mcoor)
         }
-        if (y-1 >= borders[x+1][0]) {
-            game.players[index].free_roads.add(ncoor + ":" + coor_to_string(x+1,y-1))
+        mcoor = ncoor + ":" + coor_to_string(x+1,y-1)
+        if (y-1 >= borders[x+1][0] && game.board.roads[mcoor] == null) {
+            game.players[index].free_roads.add(mcoor)
         }
-        if (y+1 <= borders[x+1][1]) {
-            game.players[index].free_roads.add(ncoor + ":" + coor_to_string(x+1,y+1))
+        mcoor = ncoor + ":" + coor_to_string(x+1,y+1)
+        if (y+1 <= borders[x+1][1] && game.board.roads[mcoor] == null) {
+            game.players[index].free_roads.add(mcoor)
         }
     // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
     } else {
-        if (y-1 >= borders[x-1][0]) {
-            game.players[index].free_roads.add(ncoor + ":" + coor_to_string(x-1,y-1))
+        mcoor = ncoor + ":" + coor_to_string(x+1,y+1)
+        if (y-1 >= borders[x-1][0] && game.board.roads[mcoor] == null) {
+            game.players[index].free_roads.add()
         }
-        if (y+1 <= borders[x-1][1]) {
-            game.players[index].free_roads.add(ncoor + ":" + coor_to_string(x-1,y+1))
+        mcoor = ncoor + ":" + coor_to_string(x-1,y+1)
+        if (y+1 <= borders[x-1][1] && game.board.roads[mcoor] == null) {
+            game.players[index].free_roads.add()
         }
-        if (x+1 < 12) {
-            game.players[index].free_roads.add(ncoor + ":" + coor_to_string(x+1, y))
+        mcoor = ncoor + ":" + coor_to_string(x+1, y)
+        if (x+1 < 12 && game.board.roads[mcoor] == null) {
+            game.players[index].free_roads.add()
         }
     }
 
@@ -419,7 +493,7 @@ function build_city(game, id, coords) {
  * @param {*} id        Jugador que ha pedido construir.
  * @param {[{x:any, y:any}, {x:any, y:any}]} coords    Coordenadas del nodo donde construir.
  */
-function build_road(game, id, coords) {
+function build_road(game, id, coords) {//TODO:Añadir posibilidad de contruir
     let index = game.players.findIndex(player => player.id === id)
     let rcoor = coor_to_string(coords[0].x, coords[0].y) + ":" + coor_to_string(coords[0].x, coords[0].y);
 
@@ -430,6 +504,20 @@ function build_road(game, id, coords) {
     }
     
 }
+
+/**
+ * Función para comprar una carta de desarrollo. Esta función SOLO SE LLAMA cuando se sabe
+ * de antemano que tiene los recursos necesarios.
+ * 
+ * @param {*} game      Partida sobre la que transcurre el juego.
+ * @param {*} id        Jugador que ha pedido construir.
+ */
+function buy_cards(game, id) {
+    let index = game.players.findIndex(player => player.id === id)
+}
+
+
+
 
 
 console.log('BEFORE BUILDING VILLAGE:')
@@ -446,6 +534,29 @@ console.log('AFTER BUILDING VILLAGE:')
 for (let i = 0; i < 4; i++) {
     console.log(game.players[i])
 }
+
+
+let esc = ''
+const rl = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+function a_game() {
+    rl.question(`Hola, usuario ${game.players[game.current_turn]}, es el turno ${game.current_turn}`, (answer) => {
+        console.log(answer)
+    })
+    //rl.question('<Pulsa enter>', (answer) => {
+    //    esc = answer;
+    //    if (esc === 'Q') {
+    //        rl.close();
+    //    } else {
+    //        
+    //        a_game();
+    //    }
+    //});
+}
+
+//a_game();
 
 
 //console.log(board.nodes)
@@ -646,17 +757,4 @@ function second_turn() {
 
 }
 */
-
-
-/*
-const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  
-  readline.question('Who are you? ', name => {
-    console.log(`Hey there ${name}!`);
-    readline.close();
-  });
-  */
 
