@@ -16,7 +16,10 @@ const User = {
                     email: req.body.email,
                     password: req.body.password,
                 })
-                await NewUser.save()
+                let user = await NewUser.save()
+                console.log("-------")
+                console.log(user)
+                console.log("-------")
                 return Session.create(req,res)
             } else {
                 throw {

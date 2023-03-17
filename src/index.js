@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const db = require('./models/index.js')
-const server = require("http").Server(app);
+
 
 const API_PORT = process.env.PORT || 8080
 //Configuraciones
@@ -20,7 +20,9 @@ app.use(morgan(':method :url :body - :status'))
 //Routes
 app.use('/api',require('./routes/index'));
 
+
 // Modelo para el manejo de Sockets.
+const server = require("http").Server(app);
 const Socket = require('./sockets/index');
 // Sockets: inicia una conexión socket.io en el servidor.
 Socket.start(server)

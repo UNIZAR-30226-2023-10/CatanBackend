@@ -113,6 +113,10 @@ const Game = {
                     // game.partida = CatanModule.CrearPartida(game.jugadores)
                     game.comenzada = true 
                     game.save()
+                    return res.status(200).json({ 
+                        status: 'sussces',
+                    })
+
                 }
                 else {
                     return res.status(300).json({

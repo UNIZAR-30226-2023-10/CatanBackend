@@ -6,7 +6,7 @@ const GamesModel = require('../models/game.model')
 const jwt_secret  = '123456'
 const jwt = require( 'jsonwebtoken')
 
-let sockets 
+
 
 const Socket = 
 {   
@@ -27,10 +27,6 @@ const Socket =
                     }).exec()
                     if (!partida.jugadores.includes(decoded)){
                         socket.emit('error', 'you arent player this game')
-                        return
-                    }
-                    if(!partida.comenzada){
-                        socket.emit('error', 'the game havent stared yet')
                         return
                     }
                     // socket.emit('ok')
@@ -55,6 +51,8 @@ const Socket =
                                 }
                                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
                                 // CatanModule.move(partida.game , partida.jugadores.indexOf(decoded), move)
+                                // socket.emit('update')
+                                // socket.emit('notify')
                             }
                         })
                     })
@@ -75,6 +73,8 @@ const Socket =
       
     });
     },
+
+
     async broadCastMsg(user, codigo_partida, msg){
         
     },
