@@ -1,5 +1,5 @@
 # Proyecto Software 2022-23. Universidad de Zaragoza
-## Proyecto Catán. Backend
+## Proyecto Catán: Backend
 Para iniciar el sistema:
 1. Descargar el repositorio.
 2. Moverse a la carpeta raíz del repositorio e instalar las dependencias.
@@ -11,6 +11,7 @@ npm install
 npm start
 ```
 
+<!--
 ## Funcionamiento de las conexiones:
 1. Rutas:
     - /register
@@ -38,3 +39,4 @@ npm start
     - back -> guarda cambios, envia partidaActualizada a todos y envia las  - notificaciones
     - send(evento, argumentos)
     - lisener(evento, callback(argumentos))
+-->
