@@ -51,29 +51,16 @@ function create_game(code) {
     }
 }
 
-/*
-    Tablero {
-        biomes: biomes,
-        thief_biome: -1,
-        nodes:  nodes,
-        roads:  edges,
-        figures: []
-    }
-*/
-/*
-    Jugador {
-        id:
-        order:
-        deck:
-        free_nodes:
-        free_edges:
-        villages: Trigo=1, Madera=1, Ladrillo=1, Lana=1
-        cities:   Trigo=2, Piedra=2, Poblado=1
-        roads:
-        resources: [0]Trigo, [1]Madera, [2]Ladrillo, [4]Piedra, [5]Lana 
-    }
-*/
-
+// Un jugador tiene:
+// - Un id.
+// - Nodos en los que puede construir.
+// - Caminos en los que puede construir.
+// - Pueblos construidos (sus coordenadas).
+// - Ciudades construidas (sus coordenadas).
+// - Caminos construidos (sus coordenadas).
+// - Recursos que posee.
+// - Cartas de desarrollo que posee.
+// - Caballeros usados.
 function create_player(id) {
     return {
         id: id,
@@ -265,6 +252,9 @@ function create_board() {
     }
 }
 
+// ============================================================================
+// SIN LIMPIAR
+// ============================================================================
 // Primer turno:
 /*
 function next_turn(game, id, phase) {
@@ -273,13 +263,11 @@ function next_turn(game, id, phase) {
         // Primera ronda
         build_village(game, id,coords, phase);                                          //Construye el primer poblado
         build_road(game,id,coords);                                                     //Construye la primera carretera
-        
         if(index==3){                                                                   //Pasa a la segunda ronda
             next_turn(game,id,1);
         }else{                                                                          //Pasa el turno para la primera ronda                                   
             next_turn(game,jugadores[id+1],0);
         }
-
     } else if (phase === 1) {                                                           //Segunda ronda, solo contruccion. Recibe recursos por la contruccion del poblado
         // Segunda ronda
         build_village(game, id,coords, phase);                                          //Construye el segundo poblado
@@ -292,7 +280,6 @@ function next_turn(game, id, phase) {
         }else{                                                                          //Pasa el turno para la segunda ronda
             next_turn(game,jugadores[id-1],0);                                          
         }
-
     } else {                                                                            //TODO: Primera version sin opciones de usar antes caballero???
         if(index==3){                                                                   //TODO: Comprobar si hay ganador al finalizar el turno???
             next_turn(game,jugadores[0],2)
@@ -303,42 +290,10 @@ function next_turn(game, id, phase) {
         // Resto de la partida igual
     }
 }
-
 */
-// ---
+
+
 ids   = ["Jkilo90o", "XXXZ89xx", "45TRej23", "5ty62sw1"]
-/*
-board = create_board()
-//console.log(board)
-game = {
-    players: (() => {
-        players = []
-        for (let i = 0; i < 4; i++) {
-            players.push({ 
-                id: ids[i],
-                order: i+1,
-                free_nodes: new Set(Object.keys(board.nodes)),
-                free_roads: new Set(),
-                villages: new Set(),
-                cities: new Set(),
-                roads: new Set(),
-                resources : { Trigo:0, Madera:0, Ladrillo:0, Piedra:0, Lana:0 },
-                growth_cards: {
-                    Caballero: 30,
-                    Caballeros_usados: 0
-                },
-            })
-        }
-        return players
-    })(),
-    board: board,
-    current_turn: 0,
-    phase: 0
-}
-*/
-//console.log(game)
-
-
 /**
  * Función auxiliar. Calcula el número de cartas totales del jugador.
  * 
@@ -429,16 +384,6 @@ function roll_dices(game) {
                 }
             }
         }
-    }
-}
-
-
-function road_coords(game, ncoor, mcoor) {
-    let rcoor = ncoor + ":" + mcoor
-    if (rcoor in game.board.roads) {
-        return rcoor
-    } else {
-        return mcoor + ":" + ncoor
     }
 }
 
@@ -551,12 +496,18 @@ function build_city(game, id, coords) {
     game.board.nodes[ncoor].building.type = 'City'
     game.players[index].cities.add(ncoor)
     // COSTO: Poblado=1, Trigo=2, Piedra=2
-    if (game.phase === 3) {
-        game.players[index].villages.delete(ncoor)
-        game.players[index].resources['Trigo']  -= 2
-        game.players[index].resources['Piedra'] -= 3
-    }
+    game.players[index].villages.delete(ncoor)
+    game.players[index].resources['Trigo']  -= 2
+    game.players[index].resources['Piedra'] -= 3
+}
 
+function road_coords(game, ncoor, mcoor) {
+    let rcoor = ncoor + ":" + mcoor
+    if (rcoor in game.board.roads) {
+        return rcoor
+    } else {
+        return mcoor + ":" + ncoor
+    }
 }
 
 /**
@@ -569,8 +520,8 @@ function build_city(game, id, coords) {
  */
 function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
     let index = game.players.findIndex(player => player.id === id)
-    let rcoor = coor_to_string(coords[0].x, coords[0].y) + ":" + coor_to_string(coords[0].x, coords[0].y);
-
+    let rcoor = road_coords(game, coor_to_string(coords[0].x, coords[0].y), coor_to_string(coords[1].x, coords[1].y))
+    console.log(rcoor)
     game.board.roads[rcoor].id = id
     game.players[index].roads.add(rcoor)
     // COSTO: Madera=1, Ladrillo=1
