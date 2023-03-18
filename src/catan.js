@@ -547,50 +547,90 @@ function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
     // - Se puede evitar la comprobacion de si es par o no, se puede hacer que si o si
     // el primero sea par y el segundo sea impar.
     for (let coord of coords) {
-        let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord)
+        let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord), free_node = true
         // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
         if (x % 2 === 0) {
             if (x-1 > 0) {
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
+                if (game.board.nodes[ncoor].building == null) {
                     rcoor = rcoor_toString(game, [coord, {x:x-1, y:y}]);
                     if (game.board.roads[rcoor].id == null) {
                         game.players[index].free_roads.add(rcoor)
                     }
+                } else {
+                    if (game.board.nodes[ncoor].building.id === id) {
+                        rcoor = rcoor_toString(game, [coord, {x:x-1, y:y}]);
+                        if (game.board.roads[rcoor].id == null) {
+                            game.players[index].free_roads.add(rcoor)
+                        }  
+                    }
+                    free_node = false
                 }
             }
             if (y-1 >= borders[x+1][0]) {
                 console.log(coord)
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
+                if (game.board.nodes[ncoor].building == null) {
                     rcoor = rcoor_toString(game, [coord, {x:x+1, y:y-1}]);
                     if (game.board.roads[rcoor].id == null) {
                         game.players[index].free_roads.add(rcoor)
                     }
+                } else {
+                    if (game.board.nodes[ncoor].building.id === id) {
+                        rcoor = rcoor_toString(game, [coord, {x:x+1, y:y-1}]);
+                        if (game.board.roads[rcoor].id == null) {
+                            game.players[index].free_roads.add(rcoor)
+                        }
+                    }
+                    free_node = false
                 }
             }
             if (y+1 <= borders[x+1][1]) {
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
+                if (game.board.nodes[ncoor].building == null) {
                     rcoor = rcoor_toString(game, [coord, {x:x+1, y:y+1}]);
                     if (game.board.roads[rcoor].id == null) {
                         game.players[index].free_roads.add(rcoor)
                     }
+                } else {
+                    if (game.board.nodes[ncoor].building.id === id) {
+                        rcoor = rcoor_toString(game, [coord, {x:x+1, y:y+1}]);
+                        if (game.board.roads[rcoor].id == null) {
+                            game.players[index].free_roads.add(rcoor)
+                        }
+                    }
+                    free_node = false
                 }
             }
         // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
         } else {
             if (y-1 >= borders[x-1][0]) {
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
+                if (game.board.nodes[ncoor].building == null) {
                     rcoor = rcoor_toString(game, [coord, {x:x-1, y:y-1}]);
                     if (game.board.roads[rcoor].id == null) {
                         game.players[index].free_roads.add(rcoor)
                     }
+                } else {
+                    if (game.board.nodes[ncoor].building.id === id) {
+                        rcoor = rcoor_toString(game, [coord, {x:x-1, y:y-1}]);
+                        if (game.board.roads[rcoor].id == null) {
+                            game.players[index].free_roads.add(rcoor)
+                        }
+                    }
+                    free_node = false
                 }
             }
             if (y+1 <= borders[x-1][1]) {
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
+                if (game.board.nodes[ncoor].building == null) {
                     rcoor = rcoor_toString(game, [coord, {x:x-1, y:y+1}]);
                     if (game.board.roads[rcoor].id == null) {
                         game.players[index].free_roads.add(rcoor)
                     }
+                } else {
+                    if (game.board.nodes[ncoor].building.id === id) {
+                        rcoor = rcoor_toString(game, [coord, {x:x-1, y:y+1}]);
+                        if (game.board.roads[rcoor].id == null) {
+                            game.players[index].free_roads.add(rcoor)
+                        }
+                    }
+                    free_node = false
                 }
             }
             if (x+1 < 12) {
@@ -599,13 +639,21 @@ function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
                     if (game.board.roads[rcoor].id == null) {
                         game.players[index].free_roads.add(rcoor)
                     }
+                } else {
+                    if (game.board.nodes[ncoor].building.id === id) {
+                        rcoor = rcoor_toString(game, [coord, {x:x+1, y:y}]);
+                        if (game.board.roads[rcoor].id == null) {
+                            game.players[index].free_roads.add(rcoor)
+                        }
+                    }
+                    free_node = false
                 }
-            }
+            } 
+        }
+        if (free_node) {
+            game.players[index].free_nodes.add(ncoor)
         }
     }
-
-    // Add possible new nodes.
-
 }
 
 /**
