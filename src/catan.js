@@ -38,8 +38,11 @@ function coor_to_string(x,y) {
 // - Turno actual de partida.
 // - Si esta comenzada o no (phase)
 function create_game(code) {
+
     return {
+        cartas_desarrollo: [],
         players: [],
+        order: [],
         board: null,      // No es necesario un tablero nada más crear la partida.
         code: code,       // Hay que discutir muchas cosas sobre esto...
         current_turn : 0, //
@@ -70,7 +73,13 @@ function create_player(id) {
         cities: new Set(),
         roads: new Set(),
         resources: null,
-        growth_cards: null,
+        growth_cards: {
+            'Caballeros':14,
+            'Carreteras': 2,
+            'Monopolio': 2,
+            'Descubrimiento': 2,
+            'Punto': 5
+        },
         // TODO: Yo sacaria este valor fuera de growth_cards
         // Ya esta sacado.
         used_knights: 0,
@@ -90,6 +99,8 @@ const biome_terraform    = [4, 4, 3, 3, 4, 1]
 const biome_names        = ['Cultivo','Bosque','Colina','Montaña','Pasto','Desierto']
 const biome_resources    = ['Trigo','Madera','Ladrillo','Piedra','Lana']
 const biome_token_starts = [0, 2, 4, 6, 8, 10]
+const cartasDesarrollo = ['Caballero', 'Carreteras', 'Monopolio', 'Descubrimiento', 'Punto']
+let cartasDesarrollo_num = [14, 2, 2, 2, 5]
 // - Fichas numericas ----- A  B  C  D  E  F   G  H   I   J  K  L   M  N  O  P  Q  R
 const biome_token_values = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
 // - Limites para el calculo de coordenadas en el grid cuadrado.
@@ -242,13 +253,6 @@ function create_board() {
         nodes: nodes,
         roads: edges,
         buildings: new Set(),
-        growth_deck: {
-            'Caballeros': 14,
-            'Carreteras': 2,
-            'Monopolio': 2,
-            'Descubrimiento': 2,
-            'Punto': 5
-        }
     }
 }
 
@@ -308,19 +312,6 @@ function total_resources(player) { //TODO:Player no deberia ser el id?? No, es u
     return total
 }
 
-/**
- * Función auxiliar. Calcula el número de cartas totales del jugador.
- * 
- * @param {*} player    Estructura jugador recibida.
- * @returns 
- */
-function poblar_desarrollos(game) {
-
-    for (let resource of Object.values(player.resources)) {
-        total += resource
-    }
-    return total
-}
 
 
 function get_resources(game, res) {
@@ -494,7 +485,7 @@ function build_city(game, id, coords) {
     let ncoor = coor_to_string(coords.x,coords.y)
 
     game.board.nodes[ncoor].building.type = 'City'
-    game.players[index].cities.add(ncoor)
+    game.players[indebuild_rbuild_roadoadx].cities.add(ncoor)
     // COSTO: Poblado=1, Trigo=2, Piedra=2
     game.players[index].villages.delete(ncoor)
     game.players[index].resources['Trigo']  -= 2
@@ -546,13 +537,13 @@ function buy_cards(game, id) {
     game.players[index].resources['Piedra']--
     game.players[index].resources['Lana']--
     if(card == 'Caballero'){
-        game.players[index].growth_cards.Caballeros;
+        game.players[index].growth_cards.Caballeros++;
     }else if(card == 'Descubrimiento'){
-        game.players[index].growth_cards.Descubrimientos;
+        game.players[index].growth_cards.Descubrimientos++;
     }else if(card == 'Carreteras'){
-        game.players[index].growth_cards.Cartas_Carreteras;
+        game.players[index].growth_cards.Cartas_Carreteras++;
     }else if(card == 'Monopolio'){
-        game.players[index].growth_cards.Monopolios;
+        game.players[index].growth_cards.Monopolios++;
     }else if(card == 'Punto'){
         game.players[index].growth_cards.Puntos++;
     }
@@ -566,51 +557,51 @@ function barajar_desarrollos(game) {
         numCards--;
         if(randomNumber < cartasDesarrollo_num[0]){//Coloca caballero
             cartasDesarrollo_num[0]--;
-            cartas_desarrollo.push(cartasDesarrollo[0]);
+            game.cartas_desarrollo.push(cartasDesarrollo[0]);
         }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1])){//Coloca Carreteras
             cartasDesarrollo_num[1]--;
-            cartas_desarrollo.push(cartasDesarrollo[1]);
+            game.cartas_desarrollo.push(cartasDesarrollo[1]);
         }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1]+cartasDesarrollo_num[2])){//Coloca Monopolio
             cartasDesarrollo_num[2]--;
-            cartas_desarrollo.push(cartasDesarrollo[2]);
+            game.cartas_desarrollo.push(cartasDesarrollo[2]);
         }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1]+cartasDesarrollo_num[2]+cartasDesarrollo_num[3])){//Coloca Descubrimiento
             cartasDesarrollo_num[3]--;
-            cartas_desarrollo.push(cartasDesarrollo[3]);
+            game.cartas_desarrollo.push(cartasDesarrollo[3]);
         }else { //Coloca Punto
             cartasDesarrollo_num[4]--;
-            cartas_desarrollo.push(cartasDesarrollo[4]);
+            game.cartas_desarrollo.push(cartasDesarrollo[4]);
         }
     }
 }
 
 
 
-function usar_monopolio(game, id, materia) {
+function monopoly(game, id, resource) {
     let index = game.players.findIndex(player => player.id === id)
     game.players[index].growth_cards.Monopolios--
     let res = 0;
     for(let i = 0; i < game.players.length; i++){
-        res += game.players[i].resources[materia]
-        game.players[i].resources[materia]=0
+        res += game.players[i].resources[resource]
+        game.players[i].resources[resource]=0
     }
-    game.players[index].resources[materia]=res
+    game.players[index].resources[resource]=res
 }
 
-function usar_descubrimiento(game, id, materia1, materia2) {
+function discovery (game, id, resource, resource2) {
     let index = game.players.findIndex(player => player.id === id)
     game.players[index].growth_cards.Descubrimientos--
-    game.players[index].resources[materia1]++
-    game.players[index].resources[materia2]++
+    game.players[index].resources[resource]++
+    game.players[index].resources[resource2]++
 }
 
-function usar_caballero(game, id, hexagono, idJugadorRobar) {
+function knight(game, id, hexagon, idPlayer) {
     let index = game.players.findIndex(player => player.id === id)
     game.players[index].growth_cards.Caballeros--
     game.players[index].growth_cards.Caballeros_usados++
-    game.board.thief_biome=hexagono
-    let index2 = game.players.findIndex(player => player.id === idJugadorRobar)
+    game.board.thief_biome=hexagon
+    let index2 = game.players.findIndex(player => player.id === idPlayer)
 
-    let randomNumber = Math.floor(Math.random() * total_resources(idJugadorRobar));
+    let randomNumber = Math.floor(Math.random() * total_resources(idPlayer));
 
     if(randomNumber < game.players[index2].resources['Grano']){//Coloca caballero
         game.players[index2].resources['Grano']--;
@@ -753,6 +744,11 @@ function order_selection_simulation(game) {
             })
         })
     })
+}
+
+function order_selection(game,id){
+    let index = game.players.findIndex(player => player.id === id);
+    game.order[index] = dices();
 }
 
 function round_simulation(game) {
@@ -1017,4 +1013,11 @@ function second_turn() {
 
 }
 */
+move = {
+    id: tirar_dados,
+
+}
+
+
+
 
