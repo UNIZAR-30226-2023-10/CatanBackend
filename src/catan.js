@@ -30,47 +30,90 @@ function coor_to_string(x,y) {
 // PARTIDA 
 //=============================================================================
 // Una partida tiene:
+// - Lista de jugadores.
+// - Id del host: no creo que haga falta siendo que guardas la partida con el host 
+//   en la base de datos.
+// - Tablero.
 // - Codigo.
 // - Turno actual de partida.
-// - Lista de jugadores.
-// - Tablero.
-// - Si esta comenzada o no.
-/*
-class partida {
-    constructor(anfitrion, turno, jugadores, tablero) {
-        // General
-        this.code      = 
-        this.anfitrion = anfitrion; // Id del usuario que es anfitrion.
-        this.turno     = turno;     // Turno actual (1->4).
-        this.jugadores = jugadores; // Jugadores de la partida.
-        this.tablero   = tablero;   // Tablero.
+// - Si esta comenzada o no (phase)
+function create_game(code) {
+    return {
+        players: [],
+        board: null,      // No es necesario un tablero nada más crear la partida.
+        code: code,       // Hay que discutir muchas cosas sobre esto...
+        current_turn : 0, //
+        phase: 0          // Indica el estado de la partida:
+                          // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego.
+                          // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
+                          // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
+                          // - (3). Resto de rondas.
     }
 }
+
+/*
+    Tablero {
+        biomes: biomes,
+        thief_biome: -1,
+        nodes:  nodes,
+        roads:  edges,
+        figures: []
+    }
+*/
+/*
+    Jugador {
+        id:
+        order:
+        deck:
+        free_nodes:
+        free_edges:
+        villages: Trigo=1, Madera=1, Ladrillo=1, Lana=1
+        cities:   Trigo=2, Piedra=2, Poblado=1
+        roads:
+        resources: [0]Trigo, [1]Madera, [2]Ladrillo, [4]Piedra, [5]Lana 
+    }
 */
 
-// == BOARD
-// Terraformación de biomas:
-// 1. Tierra de cultivo/Trigo   4
-// 2. Bosque/Madera             4
-// 3. Colinas/Ladrillo          3
-// 4. Montañas/Piedra           3
-// 5. Pasto/Lana                4
-// 6. Desierto                  1
+function create_player(id) {
+    return {
+        id: id,
+        free_nodes: new Set(),
+        free_roads: new Set(),
+        villages: new Set(),
+        cities: new Set(),
+        roads: new Set(),
+        resources: null,
+        growth_cards: null,
+        // TODO: Yo sacaria este valor fuera de growth_cards
+        // Ya esta sacado.
+        used_knights: 0,
+    }
+}
+
+// Un tablero tiene:
+// Para su construcción:
+// - Terraformación de biomas:
+//  1. Tierra de cultivo/Trigo   4
+//  2. Bosque/Madera             4
+//  3. Colinas/Ladrillo          3
+//  4. Montañas/Piedra           3
+//  5. Pasto/Lana                4
+//  6. Desierto                  1
 const biome_terraform    = [4, 4, 3, 3, 4, 1]
 const biome_names        = ['Cultivo','Bosque','Colina','Montaña','Pasto','Desierto']
 const biome_resources    = ['Trigo','Madera','Ladrillo','Piedra','Lana']
 const biome_token_starts = [0, 2, 4, 6, 8, 10]
-// Fichas numericas ------- A  B  C  D  E  F   G  H   I   J  K  L   M  N  O  P  Q  R
+// - Fichas numericas ----- A  B  C  D  E  F   G  H   I   J  K  L   M  N  O  P  Q  R
 const biome_token_values = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
+// - Limites para el calculo de coordenadas en el grid cuadrado.
 const borders = [[3,7],[2,8],[2,8],[1,9],[1,9],[0,10],[0,10],[1,9],[1,9],[2,8],[2,8],[3,7]];
-const growth_cards = {
-    'Caballeros':14,
-    'Carreteras': 2,
-    'Monopolio': 2,
-    'Descubrimiento': 2,
-    'Punto': 5
-}
-
+// Como objeto final:
+// - Biomas (celdas hexagonales).
+// - Id del bioma donde se encuentra el ladron.
+// - Nodos de construccion (vertices).
+// - Caminos de construccion (aristas).
+// - Construcciones hechas y a quien pertenecen.
+// - Una baraja con cartas de desarrollo
 function create_board() {
     // Generar hexagonos:
     let terraform    = biome_terraform
@@ -211,39 +254,16 @@ function create_board() {
         thief_biome: -1,
         nodes: nodes,
         roads: edges,
-        buildings: new Set()
+        buildings: new Set(),
+        growth_deck: {
+            'Caballeros': 14,
+            'Carreteras': 2,
+            'Monopolio': 2,
+            'Descubrimiento': 2,
+            'Punto': 5
+        }
     }
 }
-
-/*
-    Juego:
-        jugadores: [],
-        tablero: null,
-        turno_actual:  
-*/
-/*
-    Tablero {
-        biomes: biomes,
-        thief_biome: -1,
-        nodes:  nodes,
-        roads:  edges,
-        figures: []
-    }
-*/
-/*
-    Jugador {
-        id:
-        order:
-        deck:
-        free_nodes:
-        free_edges:
-        villages: Trigo=1, Madera=1, Ladrillo=1, Lana=1
-        cities:   Trigo=2, Piedra=2, Poblado=1
-        roads:
-        resources: [0]Trigo, [1]Madera, [2]Ladrillo, [4]Piedra, [5]Lana 
-    }
-*/
-
 
 // Primer turno:
 /*
@@ -348,28 +368,33 @@ function poblar_desarrollos(game) {
 }
 
 
-function get_resources(game) {
+function get_resources(game, res) {
     if (game.phase === 2) {
-
+        for (let i = 0; i < game.players.length; i++) {
+            let villages_arr = [...game.players[i].villages]
+            last_built = villages_arr[villages_arr.length-1]
+            game.board.nodes[last_built].biomes.forEach((biome) => {
+                game.players[i].resources[game.board.biomes[biome].resource]++
+            })
+        }
     } else {
-        for (let i = 0; i < 4; i++){
+        for (let i = 0; i < game.players.length; i++){
             for (let building of game.players[i].villages) {
                 game.board.nodes[building].biomes.forEach((biome) => {
-                    if (biome.token === res) {
+                    if (game.board.biomes[biome].token === res) {
                         game.players[i].resources[game.board.biomes[biome].resource]++
                     }
                 });
             }
             for (let building of game.players[i].cities) {
                 game.board.nodes[building].biomes.forEach((biome) => {
-                    if (biome.token === res) {
+                    if (game.board.biomes[biome].token === res) {
                         game.players[i].resources[game.board.biomes[biome].resource] += 2
                     }
                 })
             }
         }
     }
-
 }
 
 function dices() {
@@ -389,7 +414,7 @@ function dices() {
 function roll_dices(game) {
     let res = dices()
     if (res !== 7) {
-        get_resources(game)
+        get_resources(game, res)
     } else {
         for (let i = 0; i < 4; i++) {
             total = total_resources(game.players[i]);
@@ -454,7 +479,6 @@ function build_village(game, id, coords) {
         }
         if (y+1 <= borders[x+1][1]) {
             rcoor = road_coords(game, ncoor, coor_to_string(x+1,y+1))
-            console.log(rcoor)
             if (game.board.roads[rcoor].id == null) {
                 game.players[index].free_roads.add(rcoor)
             }
@@ -463,7 +487,6 @@ function build_village(game, id, coords) {
     } else {
         if (y-1 >= borders[x-1][0]) {
             rcoor = road_coords(game, ncoor, coor_to_string(x-1,y-1))
-            console.log(rcoor)
             if (game.board.roads[rcoor].id == null) {
                 game.players[index].free_roads.add(rcoor)
             }
@@ -662,21 +685,24 @@ const rl = require('readline').createInterface({
 });
 
 function next_turn(game) {
-    if (game.phase === 0) {
+    if (game.phase === 1) {
         if (game.current_turn !== game.players.length-1) {
             game.current_turn++
         } else {
-            game.phase = 1
+            console.log("=========================== DE FASE 1 a FASE 2 ===========================")
+            game.phase = 2
         }
-    } else if (game.phase === 1) {
+    } else if (game.phase === 2) {
         if (game.current_turn !== 0) {
             game.current_turn--
         } else {
-            game.phase = 2
+            console.log("=========================== DE FASE 2 a FASE 3 ===========================")
             game.players.forEach((player) => {
                 player.free_nodes = new Set()
             })
-            get_resources(game)
+            get_resources(game, 0)
+            console.log(game.players)
+            game.phase = 3
         }
     } else {
         game.current_turn = (game.current_turn+1)%(game.players.length)
@@ -686,32 +712,6 @@ function next_turn(game) {
 // ============================================================================
 // SIMULACION
 // ============================================================================
-function create_game(code) {
-    return {
-        players: [],
-        board: null, // No es necesario un tablero nada más crear la partida.
-        code: code, // Hay que discutir muchas cosas sobre esto...
-        current_turn : 0,
-        phase: 0
-    }
-}
-
-function create_player(id) {
-    return {
-        id: id,
-        free_nodes: new Set(),
-        free_roads: new Set(),
-        villages: new Set(),
-        cities: new Set(),
-        roads: new Set(),
-        resources: null,
-        growth_cards: null,
-        // TODO: Yo sacaria este valor fuera de growth_cards
-        // Ya esta sacado.
-        used_knights: 0,
-    }
-}
-
 function start_game(game) {
     game.board = create_board()
     for (let i = 0; i < game.players.length; i++) {
@@ -794,9 +794,7 @@ function order_selection_simulation(game) {
                     res = dices()
                     order_selection_rolls[game.current_turn++] = res
                     console.log(`====> Player #${game.players[3].id} got a ${res}`)
-
                     console.log('<Unordered players>', game.players)
-                    console.log(order_selection_rolls)
                     order_selection(game, order_selection_rolls)
                     console.log('<Ordered players>', game.players)
                     round_simulation(game)
@@ -810,7 +808,29 @@ function round_simulation(game) {
     console.log("=================== SIMULACION DE UNA RONDA ===================")
     console.log(`Turn ${game.current_turn}`)
     console.log(`Player #${game.players[game.current_turn].id}`)
-    if (game.phase === 1) {
+    if (game.phase < 3) {
+        // =====> SIMULAMOS LA CONSTRUCCIÓN DE PUEBLO: AQUI HABRIA QUE LLAMAR A BUILD_VILLAGE UNA VEZ EL JUGADOR LE DE A ESE BOTON.
+        console.log('< Construcción del poblado >')
+        rl.question('Coordenada en x: ', (x) => {
+            rl.question('Coordenada en y: ', (y) => {
+                build_village(game, game.players[game.current_turn].id, {x:parseInt(x),y:parseInt(y)})
+                // =====> SIMULAMOS LA CONSTRUCCIÓN DE CARRETERA: AQUI HABRIA QUE LLAMAR A BUILD_ROAD UNA VEZ EL JUGADOR LE DE A ESE BOTON.
+                console.log('< Construcción de la carretera >')
+                rl.question('Coordenada en x del primer nodo: ', (x_1) => {
+                    rl.question('Coordenada en y del primer nodo: ', (y_1) => {
+                        rl.question('Coordenada en x del segundo nodo: ', (x_2) => {
+                            rl.question('Coordenada en y del segundo nodo: ', (y_2) => {
+                                build_road(game, game.players[game.current_turn].id, 
+                                    [{x:parseInt(x_1),y:parseInt(y_1)},{x:parseInt(x_2),y:parseInt(y_2)}])
+                                next_turn(game)
+                                round_simulation(game)
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    } else {
         build_simulation(game)
     }
 }
@@ -818,26 +838,32 @@ function round_simulation(game) {
 function build_simulation(game) {
     rl.question('(0) Pueblo, (1) Ciudad, (2) Carretera: ', (option) => {
         if (option === "0") {
+            console.log('< Construcción del poblado >')
             rl.question('Coordenada en x: ', (x) => {
                 rl.question('Coordenada en y: ', (y) => {
                     build_village(game, game.players[game.current_turn].id, {x:parseInt(x),y:parseInt(y)})
+                    next_turn(game)
                     round_simulation(game)
                 })
             })
         } else if (option === "1") {
+            console.log('< Construcción de la ciudad >')
             rl.question('Coordenada en x: ', (x) => {
                 rl.question('Coordenada en y: ', (y) => {
                     build_city(game, game.players[game.current_turn].id, {x:parseInt(x),y:parseInt(y)})
+                    next_turn(game)
                     round_simulation(game)
                 })
             })
         } else if (option === "2") {
+            console.log('< Construcción de la carretera >')
             rl.question('Coordenada en x del primer nodo: ', (x_1) => {
                 rl.question('Coordenada en y del primer nodo: ', (y_1) => {
                     rl.question('Coordenada en x del segundo nodo: ', (x_2) => {
                         rl.question('Coordenada en y del segundo nodo: ', (y_2) => {
                             build_road(game, game.players[game.current_turn].id, 
                                 [{x:parseInt(x_1),y:parseInt(y_1)},{x:parseInt(x_2),y:parseInt(y_2)}])
+                            next_turn(game)
                             round_simulation(game)
                         })
                     })
@@ -846,6 +872,7 @@ function build_simulation(game) {
         }
     })
 }
+
 
 game_simulation()
 
