@@ -11,8 +11,8 @@ const jwt = require( 'jsonwebtoken')
 const Socket = 
 {   
     async start(server){
-       let sockets = io(server)
-       sockets.on("connection", (socket) => {
+        let sockets = io(server)
+        sockets.on("connection", (socket) => {
         // enlazar el socket con la partida
         socket.on('joinGame', (token, codigo_partida) => {
             // verificamos el token
@@ -30,7 +30,8 @@ const Socket =
                         return
                     }
                     // socket.emit('ok')
-                    socket.join(decoded + '-' + codigo_partida)
+                    socket.join(`${decoded}_${codigo_partida}`)
+                    socket.join(codigo_partida)
                     socket.on('move', (token, codigo_partida, move) =>{ 
                         jwt.verify(token, jwt_secret, (err, decoded) => {
                             if (err) {
@@ -41,6 +42,7 @@ const Socket =
                                 let partida = GamesModel.findOne({
                                     codigo_partida: codigo_partida
                                 }).exec()
+
                                 if (!partida.jugadores.includes(decoded)){
                                     socket.emit('error', 'you arent player this game')
                                     return
@@ -50,7 +52,11 @@ const Socket =
                                     return
                                 }
                                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                                // CatanModule.move(partida.game , partida.jugadores.indexOf(decoded), move)
+                                partida.game , notificaiones = CatanModule.move(partida.game , partida.jugadores.indexOf(decoded), move)
+                                sockets.in(`${codigo_partida}`).emit('update', partida)
+                                for (i,jugador in partida.jugadores){
+                                    sockets.in(`${j}_${codigo_partida}`).emit('notify',notificaiones[i])
+                                }
                                 // socket.emit('update')
                                 // socket.emit('notify')
                             }

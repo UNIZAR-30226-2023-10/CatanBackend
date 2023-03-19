@@ -1,5 +1,6 @@
 const GamesModel = require('../models/game.model')
 const UsersModel = require('../models/user.model')
+const CatanModule = requiere('../catan/move')
 // TODO : importar jugabilidad
 // const CatanModule = require() 
 const max = 999999
@@ -110,7 +111,7 @@ const Game = {
             if (game){
                 //comprobamos si hay suficientes jugadores 
                 if (game.jugadores.lenght > 2) {
-                    // game.partida = CatanModule.CrearPartida(game.jugadores)
+                    game.game = CatanModule.crearPartida(game.jugadores)
                     game.comenzada = true 
                     game.save()
                     return res.status(200).json({ 
