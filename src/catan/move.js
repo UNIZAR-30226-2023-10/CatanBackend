@@ -1,5 +1,5 @@
-import { notify } from '../routes/auth.routes.js';
-import { 
+const  { notify }  = require('../routes/auth.routes.js');
+const  { 
     roll_dices, 
     build_village, 
     build_city,
@@ -8,21 +8,24 @@ import {
     monopoly,
     discovery,
     knight
-} from './catan.js';
+} = require( './catan.js');
+
+const MoveType = {
+    roll_dices : 1,
+    build_city : 2,
+    build_city : 3,
+    build_road : 4,
+    buy_cards : 5,
+    monopoly : 6,
+    discovery: 7,
+    knight: 8,
+    order_selection : 9
+
+}
+
 
 let move = {
     id: 0,  
-    /*
-    1->roll_dices 
-    2->build_village -> need (coords) 
-    3->build_city -> need (coords) 
-    4->build_road -> need (coords,coords2)
-    5->buy_cards
-    6->monopoly -> need (resource)
-    7->discovery -> need (resource,resource2)
-    8->knight -> need (hexagono)
-    9->order_selection
-    */
     coords: {
         x:0,
         y:0,
@@ -42,19 +45,19 @@ const CatanModule = {
     movimiento ( id, move, game){
         switch(move.id){
 
-            case 1:
+            case MoveType.roll_dices:
                 roll_dices( game);
                 break;
 
-            case 2:
+            case MoveType.build_village:
                 build_village( game,id,move.coords);
                 break;
 
-            case 3:
+            case MoveType.build_city:
                 build_city( game,id,move,move.coords);
                 break;
             
-            case 4:
+            case MoveType.build_road:
                 const coordsRoad = [
                     {x: move.coords.x, y: move.coords.y},
                     {x: move.coords2.x, y: move.coords2.y},
@@ -62,28 +65,25 @@ const CatanModule = {
                 build_road( game, id, coordsRoad);
                 break;
 
-            case 5:
+            case MoveType.buy_cards:
                 buy_cards( game,id);
                 break;
             
-            case 6:
+            case MoveType.monopoly:
                 monopoly( game, id, move.resource);
                 break;
             
-            case 7:
+            case MoveType.discovery:
                 discovery( game, id, move.resource, move.resource2);
                 break;
             
-            case 8:
+            case MoveType.knight:
                 knight(game, id, move.hexagon, move.idPlayer);
                 break;
             
-            case 9:
+            case MoveType.order_selection:
                 order_selection(game,id);
                 break;
-
-            
-
         }
     },
 

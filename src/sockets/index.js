@@ -52,11 +52,8 @@ const Socket =
                                     return
                                 }
                                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                                partida.game , notificaiones = CatanModule.move(partida.game , partida.jugadores.indexOf(decoded), move)
-                                sockets.in(`${codigo_partida}`).emit('update', partida)
-                                for (i,jugador in partida.jugadores){
-                                    sockets.in(`${j}_${codigo_partida}`).emit('notify',notificaiones[i])
-                                }
+                                // partida.game , notificaiones = CatanModule.move(partida.game , partida.jugadores.indexOf(decoded), move)
+                                
                                 // socket.emit('update')
                                 // socket.emit('notify')
                             }

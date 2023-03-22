@@ -1,6 +1,6 @@
 const GamesModel = require('../models/game.model')
 const UsersModel = require('../models/user.model')
-const CatanModule = requiere('../catan/move')
+const CatanModule = require('../catan/move')
 // TODO : importar jugabilidad
 // const CatanModule = require() 
 const max = 999999
