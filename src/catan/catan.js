@@ -393,6 +393,7 @@ function roll_dices(game) {
             }
         }
     }
+    return game
 }
 
 /**

@@ -17,6 +17,9 @@ app.use(express.urlencoded({ extended: true }))
 morgan.token('body', (req, _res) => JSON.stringify(req.body))
 app.use(morgan(':method :url :body - :status'))
 
+app.get('/', (req, res) => {
+    return res.status(200).json({"Esta corriendo" : 'la api' })
+})
 //Routes
 app.use('/api',require('./routes/index'));
 

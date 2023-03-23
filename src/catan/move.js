@@ -42,11 +42,11 @@ let move = {
 
 const CatanModule = {
 
-    movimiento ( id, move, game){
+    movimiento (id, move, game){
         switch(move.id){
 
             case MoveType.roll_dices:
-                roll_dices( game);
+                roll_dices(game);
                 break;
 
             case MoveType.build_village:

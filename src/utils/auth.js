@@ -29,5 +29,4 @@ function verifyToken(req, res, next) {
     next()
 }
 
-// export { verifyToken } 
 module.exports = {verifyToken }
