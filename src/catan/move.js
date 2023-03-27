@@ -7,7 +7,8 @@ const  {
     buy_cards,
     monopoly,
     discovery,
-    knight
+    knight,
+    change_recourse
 } = require( './catan.js');
 
 const MoveType = {
@@ -19,8 +20,8 @@ const MoveType = {
     monopoly : 6,
     discovery: 7,
     knight: 8,
-    order_selection : 9
-
+    order_selection : 9,
+    change_recourse : 10
 }
 
 
@@ -84,10 +85,19 @@ const CatanModule = {
             case MoveType.order_selection:
                 order_selection(game,id);
                 break;
+
+            case MoveType.change_recourse:
+                change_recourse(game,id,resource, resource2);
+                break;
+            
+            case MoveType.next_turn:
+                next_turn(game);
         }
     },
 
     crearPartida(jugadores){
+        start_game(game)
+        barajar_desarrollos(game)
         return game, notificaciones
     }
 }

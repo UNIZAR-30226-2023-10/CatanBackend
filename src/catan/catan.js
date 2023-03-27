@@ -503,7 +503,7 @@ function build_city(game, id, coords) {
     let ncoor = ncoor_toString(coords)
 
     game.board.nodes[ncoor].building.type = 'City'
-    game.players[indebuild_rbuild_roadoadx].cities.add(ncoor)
+    game.players[index].cities.add(ncoor)
     // COSTO: Poblado=1, Trigo=2, Piedra=2
     game.players[index].villages.delete(ncoor)
     game.players[index].resources['Trigo']  -= 2
@@ -715,10 +715,16 @@ function knight(game, id, hexagon, idPlayer) {
     }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo']+game.players[index2].resources['Piedra'])){//Coloca Descubrimiento
         game.players[index2].resources['Piedra']--;
         game.players[index].resources['Piedra']++;
-    }else { //Coloca Punto
+    }else { 
         game.players[index2].resources['Lana']--;
         game.players[index].resources['Lana']++;
     }
+}
+
+function change_recourse (game, id, resource, resource2) {  //resource -> recurso que quiero ||resource2 -> recurso por el que cambio
+    let index = game.players.findIndex(player => player.id === id)
+    game.players[index].resources[resource2] -= 4          //En el frontend solo deben dar opciones de cambio si tiene 4 o mas del recurso que cambia
+    game.players[index].resources[resource]++
 }
 
 const rl = require('readline').createInterface({
