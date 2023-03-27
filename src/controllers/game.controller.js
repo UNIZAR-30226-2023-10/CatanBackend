@@ -9,8 +9,8 @@ const min = 100000
 const Game = {
     async create(req, res){
         console.log("create")
-       return res.status(202).json({})
-       try {
+        //    return res.status(202).json({})
+        try {
             //generamos un codigo de partida que no este siendo utilizado
             let codigoPartida = Math.floor(Math.random() * (max - min + 1) + min)
             let aux = await GamesModel.findOne({
@@ -35,7 +35,7 @@ const Game = {
 
             //devolvemos el codigo de partida
             return res.status(200).json({
-                status: 'sussces',
+                status: 'success',
                 codigo_partida : game.codigo_partida
             })
 
@@ -47,7 +47,7 @@ const Game = {
     },
     async join(req, res){
         console.log("join")
-        return res.status(203).json({})
+        // return res.status(203).json({})
         try {
 
             // comprobamos si se hay codigo de partida
@@ -92,9 +92,10 @@ const Game = {
              console.error(err)
         }
     },
+
     async start(req, res){
         console.log("start")
-        return  res.status(204).json({})
+        // return  res.status(204).json({})
         try {
             if(!req.body.codigo_partida){
                 return res.status(300).json({
@@ -111,7 +112,8 @@ const Game = {
             if (game){
                 //comprobamos si hay suficientes jugadores 
                 if (game.jugadores.lenght > 2) {
-                    game.game = CatanModule.crearPartida(game.jugadores)
+                    // comprobar si es el anfitrion
+                    game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
                     game.comenzada = true 
                     game.save()
                     return res.status(200).json({ 

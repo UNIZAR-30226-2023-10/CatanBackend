@@ -8,7 +8,11 @@ const  {
     monopoly,
     discovery,
     knight,
-    change_recourse
+    change_recourse,
+    create_game,
+    start_game,
+    create_player
+
 } = require( './catan.js');
 
 const MoveType = {
@@ -95,10 +99,17 @@ const CatanModule = {
         }
     },
 
-    crearPartida(jugadores){
+    crearPartida(jugadores, code){
+        
+        let game = create_game(code)
+        
+        for (j in jugadores){
+            game.players.push(create_player(j))
+        }
+        console.log(jugadores)
         start_game(game)
-        barajar_desarrollos(game)
-        return game, notificaciones
+        console.log(code)
+        return game
     }
 }
 

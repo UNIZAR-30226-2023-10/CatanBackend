@@ -9,36 +9,29 @@ const emailRegex =
 
 
 const GameSchema = mongoose.Schema({
-                        username: {
-                            type: String,
+                        game: {
+                            type: Object,
+                        },
+                        codigo_partida: {
+                            type: Number,
                             required: true,
-                            unique: true,
+                            unique: false
                         },
-                        email: {
-                            type: String,
+                        anfitrion: {
+                            type : String,
+                            // type: mongoose.Schema.ObjectId,
+                            // ref: 'User',
                             required: true,
-                            unique: true,
-                            validate: emailRegex,
+                            unique: false
                         },
-                        password: {
-                            type: String,
-                            required: true,
+                        jugadores: {
+                            type: [String]
+                            // type: [mongoose.Schema.ObjectId],
+                            // ref: 'User',
                         },
-                        following: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'User',
-                        },
-                        followers: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'User',
-                        },
-                        posts: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'Post',
-                        },
-                        timeline: {
-                            type: [mongoose.Schema.ObjectId],
-                            ref: 'Post',
+                        comenzada : {
+                            type : Boolean,
+                            unique: false
                         }
                     })
 

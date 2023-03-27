@@ -13,8 +13,8 @@ const Socket =
     async start(server){
         let sockets = io(server)
         sockets.on("connection", (socket) => {
-        // enlazar el socket con la partida
-        socket.on('joinGame', (token, codigo_partida) => {
+            // enlazar el socket con la partida
+            socket.on('joinGame', (token, codigo_partida) => {
             // verificamos el token
             jwt.verify(token, jwt_secret, (err, decoded) => {
                 if (err) {
@@ -52,19 +52,19 @@ const Socket =
                                     return
                                 }
                                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                                // partida.game , notificaiones = CatanModule.move(partida.game , partida.jugadores.indexOf(decoded), move)
-                                
-                                // socket.emit('update')
+                                // partida.game , notificaiones = CatanModule.move(partida.game , decoded, move)
+    
+                                // sockets.in(codigo_partida).emit('update',partida.game)
                                 // socket.emit('notify')
                             }
                         })
                     })
-                    socket.on('msg',(token, codigo_partida, msg) => {
-                        jwt.verify(token, jwt_secret, (err, decoded) => {
-                            if (err) {
-                                socket.emit('error','invalid_token')
-                            }
-                            else {
+                        socket.on('msg',(token, codigo_partida, msg) => {
+                            jwt.verify(token, jwt_secret, (err, decoded) => {
+                                if (err) {
+                                    socket.emit('error','invalid_token')
+                                }
+                                else {
                                 Socket.broadCastMsg(decoded, codigo_partida, msg)
                             }
                         })
@@ -79,7 +79,7 @@ const Socket =
 
 
     async broadCastMsg(user, codigo_partida, msg){
-        
+        sockets.in(codigo_partida).emit('new_msg',msg)
     },
 
     async sendNotify(user, codigo_partida, notify){

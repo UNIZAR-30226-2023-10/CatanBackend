@@ -131,7 +131,7 @@ const borders = [[3,7],[2,8],[2,8],[1,9],[1,9],[0,10],[0,10],[1,9],[1,9],[2,8],[
 // - Una baraja con cartas de desarrollo
 function create_board() {
     // Generar hexagonos:
-    let terraform    = biome_terraform
+    let terraform    = [...biome_terraform]
     let tokens_start = biome_token_starts[random(0, biome_token_starts.length)]
     let biomes       = []
     let offset       = 0
@@ -762,6 +762,7 @@ function next_turn(game) {
 // ============================================================================
 function start_game(game) {
     game.board = create_board()
+    console.log('tablero creado')
     for (let i = 0; i < game.players.length; i++) {
         game.players[i].free_nodes = new Set(Object.keys(game.board.nodes))
         game.players[i].resources  = { 
@@ -928,4 +929,18 @@ function build_simulation(game) {
     })
 }
 
-game_simulation()
+// game_simulation()
+module.exports = { 
+    roll_dices, 
+    build_village, 
+    build_city,
+    build_road,
+    buy_cards,
+    monopoly,
+    discovery,
+    knight,
+    change_recourse,
+    create_game,
+    start_game,
+    create_player
+}
