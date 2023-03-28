@@ -55,7 +55,7 @@ function rcoor_toString(game, coords) {
 // - Turno actual de partida.
 // - Si esta comenzada o no (phase)
 function create_game(code) {
-
+    
     return {
         cartas_desarrollo: [],
         players: [],
@@ -91,11 +91,11 @@ function create_player(id) {
         roads: new Set(),
         resources: null,
         growth_cards: {
-            'Caballeros':14,
-            'Carreteras': 2,
-            'Monopolio': 2,
-            'Descubrimiento': 2,
-            'Punto': 5
+            'Caballeros': 0,
+            'Carreteras': 0,
+            'Monopolios': 0,
+            'Descubrimientos': 0,
+            'Puntos': 0
         },
         // TODO: Yo sacaria este valor fuera de growth_cards
         // Ya esta sacado.
@@ -270,6 +270,13 @@ function create_board() {
         nodes: nodes,
         roads: edges,
         buildings: new Set(),
+        growth_cards: {
+            Caballero : 14,
+            Carreteras : 2,
+            Monopolio  : 2,
+            Descubrimiento : 2,
+            Punto: 5
+        }
     }
 }
 
@@ -632,20 +639,20 @@ function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
  */
 function buy_cards(game, id) {
     let index = game.players.findIndex(player => player.id === id)
-    let card = growth_cards.shift();   //Sacamos la primera carta del vector
+    let card = game.board.growth_cards.shift();   //Sacamos la primera carta del vector
     game.players[index].resources['Grano']--
     game.players[index].resources['Piedra']--
     game.players[index].resources['Lana']--
     if(card == 'Caballero'){
-        game.players[index].growth_cards.Caballeros++;
+        game.players[index].growth_cards.Caballero++;
     }else if(card == 'Descubrimiento'){
-        game.players[index].growth_cards.Descubrimientos++;
+        game.players[index].growth_cards.Descubrimiento++;
     }else if(card == 'Carreteras'){
         game.players[index].growth_cards.Cartas_Carreteras++;
     }else if(card == 'Monopolio'){
-        game.players[index].growth_cards.Monopolios++;
+        game.players[index].growth_cards.Monopolio++;
     }else if(card == 'Punto'){
-        game.players[index].growth_cards.Puntos++;
+        game.players[index].growth_cards.Punto++;
     }
 }
 
@@ -655,26 +662,24 @@ function barajar_desarrollos(game) {
     for(let i = 0; i < 25; i++){
         randomNumber = Math.floor(Math.random() * numCards);
         numCards--;
-        if(randomNumber < cartasDesarrollo_num[0]){//Coloca caballero
-            cartasDesarrollo_num[0]--;
-            game.cartas_desarrollo.push(cartasDesarrollo[0]);
-        }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1])){//Coloca Carreteras
-            cartasDesarrollo_num[1]--;
-            game.cartas_desarrollo.push(cartasDesarrollo[1]);
-        }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1]+cartasDesarrollo_num[2])){//Coloca Monopolio
-            cartasDesarrollo_num[2]--;
-            game.cartas_desarrollo.push(cartasDesarrollo[2]);
-        }else if(randomNumber < (cartasDesarrollo_num[0]+ cartasDesarrollo_num[1]+cartasDesarrollo_num[2]+cartasDesarrollo_num[3])){//Coloca Descubrimiento
-            cartasDesarrollo_num[3]--;
-            game.cartas_desarrollo.push(cartasDesarrollo[3]);
+        if(randomNumber < board.growth_cards.Caballero){//Coloca caballero
+            board.growth_cards.Caballero--;
+            game.board.cartas_desarrollo.push('Caballero');
+        }else if(randomNumber < (board.growth_cards.Caballero+ board.growth_cards.Carreteras)){//Coloca Carreteras
+            board.growth_cards.Carreteras--;
+            game.board.cartas_desarrollo.push('Carreteras');
+        }else if(randomNumber < (board.growth_cards.Caballero+ board.growth_cards.Carreteras+board.growth_cards.Monopolio)){//Coloca Monopolio
+            board.growth_cards.Monopolio--;
+            game.board.cartas_desarrollo.push('Monopolio');
+        }else if(randomNumber < (board.growth_cards.Caballero+ board.growth_cards.Carreteras+board.growth_cards.Monopolio+board.growth_cards.Descubrimiento)){//Coloca Descubrimiento
+            board.growth_cards.Descubrimiento--;
+            game.board.cartas_desarrollo.push('Descubrimiento');
         }else { //Coloca Punto
-            cartasDesarrollo_num[4]--;
-            game.cartas_desarrollo.push(cartasDesarrollo[4]);
+            board.growth_cards.Punto--;
+            game.board.cartas_desarrollo.push('Punto');
         }
     }
 }
-
-
 
 function monopoly(game, id, resource) {
     let index = game.players.findIndex(player => player.id === id)
@@ -774,12 +779,13 @@ function start_game(game) {
         }
         game.players[i].growth_cards = { 
             Caballero: 0,
-            Carretera: 0,
+            Carreteras: 0,
             Descubrimiento: 0,
             Monopolio: 0,
             Punto: 0
         }
     }
+    barajar_desarrollos(game)
 }
 
 function order_selection(game, order_selection_rolls) {
