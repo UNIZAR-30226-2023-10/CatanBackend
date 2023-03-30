@@ -1,6 +1,7 @@
 const GamesModel = require('../models/game.model')
 const UsersModel = require('../models/user.model')
 const CatanModule = require('../catan/move')
+const Socket = require('../sockets/index')
 // TODO : importar jugabilidad
 // const CatanModule = require() 
 const max = 999999
@@ -45,6 +46,8 @@ const Game = {
             console.error(err)
        }
     },
+
+    // /api/game/join
     async join(req, res){
         console.log("join")
         // return res.status(203).json({})
@@ -66,11 +69,16 @@ const Game = {
             if (game){
                 //comprobamos si la partida esta llena
                 //y si no ha empezado
-                if (game.jugadores.lenght < 4 && !game.comenzada) {
+                if (game.jugadores.length < 4 && !game.comenzada) {
                     //se anyade el jugador a la partida
                     game.jugadores.push(res.locals.decoded.id)
                     await game.save()
-                    return res.status(200).json({status: 'sussces'})
+                    Socket.sendAll(req.body.codigo_partida, 'new_player', { id : res.locals.decoded.id })
+                    console.log(`nuevo jugador en  la partida ${req.body.codigo_partida}`)
+                    return res.status(200).json({
+                        status: 'sussces', 
+                        jugadores : game.jugadores
+                    })
                 }
                 else {
                     return res.status(300).json({
@@ -111,9 +119,11 @@ const Game = {
 
             if (game){
                 //comprobamos si hay suficientes jugadores 
-                if (game.jugadores.lenght > 2) {
+                if (game.jugadores.length > 2) {
                     // comprobar si es el anfitrion
-                    game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
+                    console.log(`comienza la partida ${game.codigo_partida}`)
+
+                    // game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
                     game.comenzada = true 
                     game.save()
                     return res.status(200).json({ 

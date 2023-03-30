@@ -11,8 +11,8 @@ const jwt = require( 'jsonwebtoken')
 const Socket = 
 {   
     async start(server){
-        let sockets = io(server)
-        sockets.on("connection", (socket) => {
+        this.sockets = io(server)
+        this.sockets.on("connection", (socket) => {
             // enlazar el socket con la partida
             socket.on('joinGame', (token, codigo_partida) => {
             // verificamos el token
@@ -29,9 +29,10 @@ const Socket =
                         socket.emit('error', 'you arent player this game')
                         return
                     }
+                    
                     // socket.emit('ok')
                     socket.join(`${decoded}_${codigo_partida}`)
-                    socket.join(codigo_partida)
+                    socket.join(`${codigo_partida}`)
                     socket.on('move', (token, codigo_partida, move) =>{ 
                         jwt.verify(token, jwt_secret, (err, decoded) => {
                             if (err) {
@@ -79,14 +80,18 @@ const Socket =
 
 
     async broadCastMsg(user, codigo_partida, msg){
-        sockets.in(codigo_partida).emit('new_msg',msg)
+        this.sockets.in(codigo_partida).emit('new_msg',msg)
     },
 
-    async sendNotify(user, codigo_partida, notify){
-
+    async sendAll(codigo_partida, event, data){
+        this.sockets.in(`${codigo_partida}`).emit(event, data)
+        
     },
-
+    async send(user, codigo_partida, event, data){
+        this.sockets.in(`${user}_${codigo_partida}`).emit(event, data)
+    },
     async sendGame(user, codigo_partida, game){
+
     },
 
     async starGame(user, codigo_partida, game){
