@@ -9,7 +9,6 @@ const min = 100000
 
 const Game = {
     async create(req, res){
-        console.log("create")
         //    return res.status(202).json({})
         try {
             //generamos un codigo de partida que no este siendo utilizado

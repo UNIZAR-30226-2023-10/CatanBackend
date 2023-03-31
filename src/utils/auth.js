@@ -3,7 +3,6 @@ const jwt_secret  = '123456'
 const jwt = require('jsonwebtoken')
 
 function verifyToken(req, res, next) {
-    console.log(req.headers)
     if (!req.headers.authorization) {
         return res.status(403).send({
             status: 'error',
