@@ -57,7 +57,7 @@ function rcoor_toString(game, coords) {
 function create_game(code) {
     
     return {
-        cartas_desarrollo: [],
+        //cartas_desarrollo: [],
         players: [],
         order: [],
         board: null,      // No es necesario un tablero nada más crear la partida.
@@ -276,7 +276,12 @@ function create_board() {
             Monopolio  : 2,
             Descubrimiento : 2,
             Punto: 5
-        }
+        },
+        cartasDesarrollo: [],
+        max_knights: 2,
+        player_max_knights: -1,
+        max_roads: 4,
+        player_max_roads: -1,
     }
 }
 
@@ -758,7 +763,44 @@ function next_turn(game) {
             game.phase = 3
         }
     } else {
-        game.current_turn = (game.current_turn+1)%(game.players.length)
+        if(win_check){
+            console.log(`The winner is player ${game.players[current_turn].id}`)
+        }else{
+            game.current_turn = (game.current_turn+1)%(game.players.length)
+        }
+    }
+}
+
+function win_check(game, id){//faltan los puntos por objetos
+    let index = game.players.findIndex(player => player.id === id)
+    let puntos = game.players[index].villages.size + 2*(game.players[index].cities.size)+ game.players[index].growth_cards.Puntos
+    knights_points(game,id)
+    if(id==game.board.player_max_knights){
+        puntos += 2
+    }
+    roads_points(game,id)
+    if(id==game.board.player_max_roads){
+        puntos += 2
+    }
+    if(puntos >= 10){
+        console.log('< La partida finalizo >')
+    }
+    return puntos >= 10
+}
+
+function knights_points(game, id){
+    let index = game.players.findIndex(player => player.id === id)
+    if(game.players[index].used_knights > game.board.max_knights){
+        game.board.max_knights = game.players[index].used_knights
+        game.board.player_max_knights = id
+    }
+}
+
+function roads_points(game, id){//TODO: Version 1.0
+    let index = game.players.findIndex(player => player.id === id)
+    if(game.players[index].roads.size > game.board.max_roads){
+        game.board.max_roads =game.players[index].roads.size
+        game.board.player_max_roads = id
     }
 }
 
