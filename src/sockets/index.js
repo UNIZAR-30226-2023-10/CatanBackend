@@ -11,7 +11,12 @@ const jwt = require( 'jsonwebtoken')
 const Socket = 
 {   
     async start(server){
-        this.sockets = io(server)
+        this.sockets = io(server, {
+            cors: {
+                origin: "http://localhost:3000",
+                methods: ["GET", "POST"]
+              }
+        })
         this.sockets.on("connection", (socket) => {
             // enlazar el socket con la partida
             socket.on('joinGame', (token, codigo_partida) => {
@@ -80,15 +85,15 @@ const Socket =
 
 
     async broadCastMsg(user, codigo_partida, msg){
-        this.sockets.in(codigo_partida).emit('new_msg',msg)
+        this.sockets.to(codigo_partida).emit('new_msg',msg)
     },
 
     async sendAll(codigo_partida, event, data){
-        this.sockets.in(`${codigo_partida}`).emit(event, data)
+        this.sockets.to(`${codigo_partida}`).emit(event, data)
         
     },
     async send(user, codigo_partida, event, data){
-        this.sockets.in(`${user}_${codigo_partida}`).emit(event, data)
+        this.sockets.to(`${user}_${codigo_partida}`).emit(event, data)
     },
     async sendGame(user, codigo_partida, game){
 
