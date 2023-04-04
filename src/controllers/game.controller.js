@@ -73,7 +73,6 @@ const Game = {
                     game.jugadores.push(res.locals.decoded.id)
                     await game.save()
                     Socket.sendAll(req.body.codigo_partida, 'new_player', { id : res.locals.decoded.id })
-                    console.log(`nuevo jugador en  la partida ${req.body.codigo_partida}`)
                     return res.status(200).json({
                         status: 'sussces', 
                         jugadores : game.jugadores

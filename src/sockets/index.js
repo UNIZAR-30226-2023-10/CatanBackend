@@ -19,6 +19,7 @@ const Socket =
         })
         this.sockets.on("connection", (socket) => {
             // enlazar el socket con la partida
+            console.log('nuevo socket abierto')
             socket.on('joinGame', (token, codigo_partida) => {
             // verificamos el token
             jwt.verify(token, jwt_secret, (err, decoded) => {
@@ -57,6 +58,7 @@ const Socket =
                                     socket.emit('error', 'the game havent stared yet')
                                     return
                                 }
+                                console.log(`nuevo conectado al socket en  la partida ${req.body.codigo_partida}`)
                                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
                                 // partida.game , notificaiones = CatanModule.move(partida.game , decoded, move)
     
