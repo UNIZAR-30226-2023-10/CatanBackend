@@ -9,7 +9,6 @@ const min = 100000
 
 const Game = {
     async create(req, res){
-        //    return res.status(202).json({})
         try {
             //generamos un codigo de partida que no este siendo utilizado
             let codigoPartida = Math.floor(Math.random() * (max - min + 1) + min)
@@ -31,6 +30,7 @@ const Game = {
                 jugadores: [res.locals.decoded.id],
                 comenzada : false
             })
+
             game = await game.save()
 
             //devolvemos el codigo de partida
@@ -48,10 +48,7 @@ const Game = {
 
     // /api/game/join
     async join(req, res){
-        console.log("join")
-        // return res.status(203).json({})
         try {
-
             // comprobamos si se hay codigo de partida
             if(!req.body.codigo_partida){
                 return res.status(300).json({
@@ -66,13 +63,31 @@ const Game = {
             })
 
             if (game){
+
+                //si el jugador ya se encuentra en la partida devolvemos la respuesta anterior
+                if (game.jugadores.includes(res.locals.decoded.id)){
+                    return res.status(201).json({
+                        status: 'sussces',
+                        jugadores: game.jugadores
+                    })
+                }
+
                 //comprobamos si la partida esta llena
                 //y si no ha empezado
                 if (game.jugadores.length < 4 && !game.comenzada) {
+
+                    
+                    //buscamos el usuario
+                    let user = await UsersModel.findById(res.locals.decoded.id)
+
+                   
                     //se anyade el jugador a la partida
                     game.jugadores.push(res.locals.decoded.id)
                     await game.save()
-                    Socket.sendAll(req.body.codigo_partida, 'new_player', { id : res.locals.decoded.id })
+
+                    
+                    Socket.sendNewPlayer(req.body.codigo_partida, { username : user.username })
+
                     return res.status(200).json({
                         status: 'sussces', 
                         jugadores : game.jugadores
@@ -93,15 +108,13 @@ const Game = {
             
             
         }
-        catch(e){
+        catch(err){
              res.status(500).json(err)
              console.error(err)
         }
     },
 
     async start(req, res){
-        console.log("start")
-        // return  res.status(204).json({})
         try {
             if(!req.body.codigo_partida){
                 return res.status(300).json({
@@ -121,9 +134,12 @@ const Game = {
                     // comprobar si es el anfitrion
                     console.log(`comienza la partida ${game.codigo_partida}`)
 
+                    
+                    game.game = {}
                     // game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
                     game.comenzada = true 
                     game.save()
+                    Socket.sendGame(game.codigo_partida, game.game)
                     return res.status(200).json({ 
                         status: 'sussces',
                     })

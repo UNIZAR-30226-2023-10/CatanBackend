@@ -32,6 +32,9 @@ const GameSchema = mongoose.Schema({
                         comenzada : {
                             type : Boolean,
                             unique: false
+                        },
+                        chat : {
+                            type : [Object]
                         }
                     })
 
