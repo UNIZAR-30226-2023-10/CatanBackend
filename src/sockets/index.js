@@ -10,9 +10,8 @@ const UserModel = require("../models/user.model");
 
 
 
-const Socket = 
-{    
-    async move(token, codigo_partida, move){ 
+const Socket = {   
+    async move(socket, token, codigo_partida, move){ 
         jwt.verify(token, jwt_secret, async (err, decoded) => {
             if (err) {
                 socket.emit('error','invalid_token')
@@ -39,7 +38,7 @@ const Socket =
             }
         })
     },
-    async msg (token, codigo_partida, msg){
+    async msg (socket, token, codigo_partida, msg){
         jwt.verify(token, jwt_secret, async (err, decoded) => {
             if (err) {
                 socket.emit('error','invalid_token')
@@ -76,7 +75,7 @@ const Socket =
             }
         })
     },
-    async joinGame(socket,token, codigo_partida){
+    async joinGame(socket, token, codigo_partida){
         // verificamos el token
         jwt.verify(token, jwt_secret, async (err, decoded) => {
             if (err) {
@@ -84,14 +83,15 @@ const Socket =
                 socket.emit('error','invalid_token')
             }
             else {
+                console.log("Buscamos partida")
                 // buscamos la partida
                 let partida = await GamesModel.findOne({
                     codigo_partida: codigo_partida
                 })
-                if (!partida.jugadores.includes(decoded.id)){
-                    socket.emit('error', 'you arent player this game')
-                    return
-                }
+                //if (!partida.jugadores.includes(decoded.id)){
+                //    socket.emit('error', 'You aren\'t player of this game')
+                //    return
+                //}
                 
                 // socket.emit('ok')
                 // anyadimos el socket a las salas correspondientes
@@ -103,15 +103,14 @@ const Socket =
                 socket.on('msg', this.msg)
 
                 //si ya esta comenzada se necesita una reconexion 
-                if (partida.comenzada){
-                    socket.emit('update', game.game)
-                }
+                //if (partida.comenzada){
+                //    socket.emit('update', game.game)
+                //}
             }
         })
     },
     
     async start(server){
-
         //iniciamos el server de los sockets
         this.sockets = io(server, {
             cors: {
@@ -130,11 +129,11 @@ const Socket =
     },
     async sendNewPlayer(codigo_partida, data){
         try{
+            console.log("Mando un nuevo jugador?")
             this.sockets.to(codigo_partida).emit('new_player', data)
         }catch(e){
             console.log(e)
         }
-        
     },
 
     async broadCastMsg(codigo_partida, msg){

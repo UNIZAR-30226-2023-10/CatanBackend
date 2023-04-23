@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const db = require('./models/index.js')
 const  cors =require('cors')
 
-
 const API_PORT = process.env.PORT || 8080
 //Configuraciones
 app.set('port',  API_PORT );
