@@ -11,24 +11,13 @@ const  {
     change_recourse,
     create_game,
     start_game,
-    create_player
+    create_player,
+    getMoves,
+    next_turn
 
 } = require( './catan.js');
 
-const MoveType = {
-    roll_dices : 1,
-    build_city : 2,
-    build_city : 3,
-    build_road : 4,
-    buy_cards : 5,
-    monopoly : 6,
-    discovery: 7,
-    knight: 8,
-    order_selection : 9,
-    change_recourse : 10
-}
-
-
+const MoveType = ( './movesTypes.js')
 let move = {
     id: 0,  
     coords: {
@@ -97,6 +86,10 @@ const CatanModule = {
             case MoveType.next_turn:
                 next_turn(game);
         }
+    },
+
+    findMoves(id,game){
+        return getMoves(id,game)
     },
 
     crearPartida(jugadores, code){

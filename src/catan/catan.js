@@ -1,6 +1,7 @@
 //=============================================================================
 // FUNCIONES AUXILIARES 
 //=============================================================================
+const MoveType = require("./movesTypes")
 
 function random(min, max) {
     return Math.floor(Math.random() * max) + min;
@@ -376,6 +377,40 @@ function dices() {
     return random(1,6) + random(1,6)
 }
 
+//TODO : Completar
+function getMoves(id, game){
+
+    let coordsVillage = [{x: 1, y: 1},
+                    {x: 2, y: 2}]
+    let coordsRoad =[coordsVillage, coordsVillage] 
+    return {
+        //roll_dices
+        "0" : "aux",
+        //build_village
+        "1" : coordsVillage,
+        // build_city
+        "2" : coordsVillage,
+        // build_road
+        "3": coordsRoad,
+        // buy_cards
+        "4": "aux",
+        // monopoly
+        "5" : ["resurce1", "resurce2"],
+        // discovery
+        "6" : [["resurce1", "resurce2"],["resurce1", "resurce2"]],
+        // knight
+        "7" : [ {hexagon : 1, idPlayer : 2},
+                {hexagon: 3, idPlayer: 4}],
+        // order_selection
+        "8" : "aux",
+        // change_recourse
+        "9" : [["resurce1", "resurce2"],["resurce1", "resurce2"]],
+        // next_turn
+        "10" : "aux"
+ 
+
+    }
+}
 /**
  * Funcion para tirar los dados:
  *  1. El jugador ha de decidir tirar los datos (pulsar el boton).
@@ -387,9 +422,9 @@ function dices() {
  * @param {*} id    Jugador que ha decidido tirar los dados.
  */
 function roll_dices(game) {
-    let res = dices()
-    if (res !== 7) {
-        get_resources(game, res)
+    game.last_roll  = dices()
+    if (game.last_roll !== 7) {
+        get_resources(game, game.last_roll)
     } else {
         for (let i = 0; i < 4; i++) {
             total = total_resources(game.players[i]);
@@ -990,5 +1025,7 @@ module.exports = {
     change_recourse,
     create_game,
     start_game,
-    create_player
+    create_player,
+    getMoves,
+    next_turn
 }

@@ -7,6 +7,8 @@ const jwt_secret  = '123456'
 const jwt = require('jsonwebtoken');
 const User = require("../controllers/user.controller");
 const UserModel = require("../models/user.model");
+const CatanModule = require("../catan/move");
+const { notify } = require("../routes");
 
 
 
@@ -31,8 +33,13 @@ const Socket = {
                     return
                 }
                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                // partida.game , notificaiones = CatanModule.move(partida.game , decoded, move)
+                sockets.in(`${codigo_partida}`).emit('update',CatanModule.move(partida.game , decoded, move))
                 
+                for (jugador in game.jugadores ){
+                    socketes.in(`${jugador}_${codigo_partida}`)
+                    .emit("notify", CatanModule.findMoves(jugador, game))
+
+                }
                 // sockets.in(codigo_partida).emit('update',partida.game)
                 // sockets.emit('notify')
             }
