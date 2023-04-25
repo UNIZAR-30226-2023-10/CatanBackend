@@ -2,6 +2,7 @@ const GamesModel = require('../models/game.model')
 const UsersModel = require('../models/user.model')
 const CatanModule = require('../catan/move')
 const Socket = require('../sockets/index')
+const UserModel = require('../models/user.model')
 // TODO : importar jugabilidad
 // const CatanModule = require() 
 const max = 999999
@@ -19,15 +20,17 @@ const Game = {
             while (aux != null){
                 codigoPartida = Math.floor(Math.random() * (max - min + 1) + min)
                 aux = await GamesModel.findOne({
-                codigo_partida : codigoPartida
-            })
+                    codigo_partida : codigoPartida
+                })
             }
 
+            let user = await UserModel.findById(res.locals.decoded.id)
+            console.log("USUARIO ENCONTRADO (CREATE): ", user)
             //creamos una partida y la guardamos
             let game = new GamesModel({
                 codigo_partida : codigoPartida,
-                anfitrion : res.locals.decoded.id,
-                jugadores: [res.locals.decoded.id],
+                anfitrion : user.username,
+                jugadores: [user.username],
                 comenzada : false
             })
 
@@ -54,42 +57,31 @@ const Game = {
                 return res.status(300).json({
                     error : 'Se necesita un codigo de partida'
                 })
-            }  
-
-            // comprobamos si existe la partida con el codigo enviado
-
+            }
+            // Comprobamos si existe la partida con el codigo enviado
             let game = await GamesModel.findOne({
                 codigo_partida : req.body.codigo_partida
             })
-
             if (game){
-
-                //si el jugador ya se encuentra en la partida devolvemos la respuesta anterior
-                if (game.jugadores.includes(res.locals.decoded.id)){
+                let user = await UsersModel.findById(res.locals.decoded.id)
+                console.log("EL JUEGO (JOIN): ", game, user)
+                // Si el jugador ya se encuentra en la partida devolvemos la respuesta anterior
+                if (game.jugadores.includes(user.username)){
                     return res.status(201).json({
-                        status: 'sussces',
+                        status: 'success',
                         jugadores: game.jugadores
                     })
                 }
-
-                //comprobamos si la partida esta llena
-                //y si no ha empezado
+                //comprobamos si la partida esta llena y si no ha empezado
                 if (game.jugadores.length < 4 && !game.comenzada) {
-
-                    
-                    //buscamos el usuario
-                    let user = await UsersModel.findById(res.locals.decoded.id)
-
-                   
-                    //se anyade el jugador a la partida
-                    game.jugadores.push(res.locals.decoded.id)
+                    // Nuevo jugador en la partida:
+                    game.jugadores.push(user.username)
                     await game.save()
 
-                    
                     Socket.sendNewPlayer(req.body.codigo_partida, { username : user.username })
 
                     return res.status(200).json({
-                        status: 'sussces', 
+                        status: 'success', 
                         jugadores : game.jugadores
                     })
                 }
@@ -97,7 +89,6 @@ const Game = {
                     return res.status(300).json({
                         error : 'Partida llena'
                     })
-
                 }
             }
             else {
@@ -105,12 +96,10 @@ const Game = {
                     error : 'Codigo no encontrado'
                 })
             }
-            
-            
         }
         catch(err){
-             res.status(500).json(err)
-             console.error(err)
+            res.status(500).json(err)
+            console.error(err)
         }
     },
 
@@ -134,22 +123,19 @@ const Game = {
                     // comprobar si es el anfitrion
                     console.log(`comienza la partida ${game.codigo_partida}`)
 
-                    
                     game.game = {}
                     // game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
                     game.comenzada = true 
                     game.save()
                     Socket.sendGame(game.codigo_partida, game.game)
                     return res.status(200).json({ 
-                        status: 'sussces',
+                        status: 'success',
                     })
-
                 }
                 else {
                     return res.status(300).json({
                         error : 'Se necesitan jugadores'
                     })
-
                 }
             }
             else {

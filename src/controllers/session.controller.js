@@ -13,6 +13,7 @@ const Session = {
             UserModel.findOne({
                 email: req.body.email,
             }).exec((err, user) => {
+                console.log("hola")
                 if (err) {
                     res.status(500).send({ message: err })
                     return
