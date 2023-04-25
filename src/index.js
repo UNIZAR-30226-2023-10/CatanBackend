@@ -41,6 +41,7 @@ db.mongoose
         console.log('Cannot connect to the database! \n', err)
         process.exit()
     })
+    
 //Iniciando el servidor
 server.listen(app.get('port'),()=>{
     console.log(`Server listening on port ${app.get('port')}`);

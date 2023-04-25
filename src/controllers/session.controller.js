@@ -92,7 +92,7 @@ const Session = {
                 )
 
                 if (!passwordIsValid) {
-                    return res.status(401).json({})
+                    return res.status(403).json({})
                 }
 
                 var token = jwt.sign(user, jwt_secret)
