@@ -131,6 +131,8 @@ const Socket = {
             // enlazar el socket con la partida
             console.log('nuevo socket abierto: ', socket.rooms)
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
+            socket.on('startGame',(codigo_partida)=> 
+                this.startGame(socket, codigo_partida))
             socket.on("disconnect", () => console.log('socket cerrado'))    
         })
     },
@@ -154,7 +156,8 @@ const Socket = {
     async sendGame(codigo_partida, data){
         this.sockets.to(`${user}_${codigo_partida}`).emit('update', data)
     },
-    async starGame(user, codigo_partida, game){
+    async startGame(socket, codigo_partida){
+        this.sockets.to(`${codigo_partida}`).emit('redirectToGame', codigo_partida)
     }     
 }
 
