@@ -55,8 +55,7 @@ function rcoor_toString(game, coords) {
 // - Codigo.
 // - Turno actual de partida.
 // - Si esta comenzada o no (phase)
-function create_game(code) {
-    
+function create_game(code) {  
     return {
         //cartas_desarrollo: [],
         players: [],
@@ -101,9 +100,15 @@ function create_player(id) {
         // TODO: Yo sacaria este valor fuera de growth_cards
         // Ya esta sacado.
         used_knights: 0,
+        first_roll: [],
     }
 }
 
+function first_roll(game,idPalyer){
+    let index = game.players.findIndex(player => player.id === idPalyer)
+    game.players[index].first_roll[0]=random(1,6)
+    game.players[index].first_roll[1]=random(1,6)
+}
 // Un tablero tiene:
 // Para su construcción:
 // - Terraformación de biomas:
@@ -1027,5 +1032,6 @@ module.exports = {
     start_game,
     create_player,
     getMoves,
-    next_turn
+    next_turn,
+    first_roll
 }

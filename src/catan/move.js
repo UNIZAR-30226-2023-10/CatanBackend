@@ -13,7 +13,8 @@ const  {
     start_game,
     create_player,
     getMoves,
-    next_turn
+    next_turn,
+    first_roll
 
 } = require( './catan.js');
 
@@ -85,6 +86,9 @@ const CatanModule = {
             
             case MoveType.next_turn:
                 next_turn(game);
+                break;
+            case MoveType.first_roll:
+                first_roll(game,id); 
         }
     },
 
