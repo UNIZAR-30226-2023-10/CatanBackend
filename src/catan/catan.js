@@ -60,7 +60,7 @@ function create_game(code) {
         //cartas_desarrollo: [],
         players: [],
         order: [],
-        board: null,      // No es necesario un tablero nada más crear la partida.
+        board: create_board(),      // No es necesario un tablero nada más crear la partida.
         code: code,       // Hay que discutir muchas cosas sobre esto...
         current_turn : 0, //
         phase: 0          // Indica el estado de la partida:
@@ -119,11 +119,10 @@ function first_roll(game,idPalyer){
 //  5. Pasto/Lana                4
 //  6. Desierto                  1
 const biome_terraform    = [4, 4, 3, 3, 4, 1]
-const biome_names        = ['Cultivo','Bosque','Colina','Montaña','Pasto','Desierto']
+const biome_names        = ['Farmland','Forest','Hill','Mountain','Pasture','Desert']
 const biome_resources    = ['Trigo','Madera','Ladrillo','Piedra','Lana']
 const biome_token_starts = [0, 2, 4, 6, 8, 10]
-const cartasDesarrollo = ['Caballero', 'Carreteras', 'Monopolio', 'Descubrimiento', 'Punto']
-let cartasDesarrollo_num = [14, 2, 2, 2, 5]
+
 // - Fichas numericas ----- A  B  C  D  E  F   G  H   I   J  K  L   M  N  O  P  Q  R
 const biome_token_values = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
 // - Limites para el calculo de coordenadas en el grid cuadrado.
@@ -150,7 +149,7 @@ function create_board() {
         terraform[type]--
         if (type === 5) {
             biomes.push({
-                type: 'Desierto',
+                type: 'Desert',
                 resource: 'None',
                 token: 0
             })
@@ -707,21 +706,21 @@ function barajar_desarrollos(game) {
     for(let i = 0; i < 25; i++){
         randomNumber = Math.floor(Math.random() * numCards);
         numCards--;
-        if(randomNumber < board.growth_cards.Caballero){//Coloca caballero
-            board.growth_cards.Caballero--;
-            game.board.cartas_desarrollo.push('Caballero');
-        }else if(randomNumber < (board.growth_cards.Caballero+ board.growth_cards.Carreteras)){//Coloca Carreteras
-            board.growth_cards.Carreteras--;
-            game.board.cartas_desarrollo.push('Carreteras');
-        }else if(randomNumber < (board.growth_cards.Caballero+ board.growth_cards.Carreteras+board.growth_cards.Monopolio)){//Coloca Monopolio
-            board.growth_cards.Monopolio--;
-            game.board.cartas_desarrollo.push('Monopolio');
-        }else if(randomNumber < (board.growth_cards.Caballero+ board.growth_cards.Carreteras+board.growth_cards.Monopolio+board.growth_cards.Descubrimiento)){//Coloca Descubrimiento
-            board.growth_cards.Descubrimiento--;
-            game.board.cartas_desarrollo.push('Descubrimiento');
+        if(randomNumber < game.board.growth_cards.Caballero){//Coloca caballero
+            game.board.growth_cards.Caballero--;
+            game.board.cartasDesarrollo.push('Caballero');
+        }else if(randomNumber < (game.board.growth_cards.Caballero+ game.board.growth_cards.Carreteras)){//Coloca Carreteras
+            game.board.growth_cards.Carreteras--;
+            game.board.cartasDesarrollo.push('Carreteras');
+        }else if(randomNumber < (game.board.growth_cards.Caballero+ game.board.growth_cards.Carreteras+game.board.growth_cards.Monopolio)){//Coloca Monopolio
+            game.board.growth_cards.Monopolio--;
+            game.board.cartasDesarrollo.push('Monopolio');
+        }else if(randomNumber < (game.board.growth_cards.Caballero+ game.board.growth_cards.Carreteras+game.board.growth_cards.Monopolio+game.board.growth_cards.Descubrimiento)){//Coloca Descubrimiento
+            game.board.growth_cards.Descubrimiento--;
+            game.board.cartasDesarrollo.push('Descubrimiento');
         }else { //Coloca Punto
-            board.growth_cards.Punto--;
-            game.board.cartas_desarrollo.push('Punto');
+            game.board.growth_cards.Punto--;
+            game.board.cartasDesarrollo.push('Punto');
         }
     }
 }
@@ -1033,5 +1032,6 @@ module.exports = {
     create_player,
     getMoves,
     next_turn,
-    first_roll
+    first_roll,
+    barajar_desarrollos
 }

@@ -12,6 +12,7 @@ const { notify } = require("../routes");
 
 
 
+
 const Socket = {   
     async move(socket, token, codigo_partida, move){ 
         jwt.verify(token, jwt_secret, async (err, decoded) => {
@@ -36,8 +37,7 @@ const Socket = {
                 sockets.in(`${codigo_partida}`).emit('update',CatanModule.move(partida.game , decoded, move))
                 
                 for (jugador in game.jugadores ){
-                    socketes.in(`${jugador}_${codigo_partida}`)
-                    .emit("notify", CatanModule.findMoves(jugador, game))
+                    socketes.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, game))
 
                 }
                 // sockets.in(codigo_partida).emit('update',partida.game)
@@ -132,7 +132,7 @@ const Socket = {
             console.log('nuevo socket abierto: ', socket.rooms)
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
             socket.on('startGame',(codigo_partida,players)=> 
-                this.startGame(codigo_partida, players)),
+                this.startGame(codigo_partida, players, socket))
             socket.on("disconnect", () => console.log('socket cerrado'))    
         })
     },
@@ -153,12 +153,20 @@ const Socket = {
         this.sockets.to(`${codigo_partida}`).emit('notify', data)
         
     },
-    async sendGame(codigo_partida, data){
-        this.sockets.to(`${user}_${codigo_partida}`).emit('update', data)
+    async sendGame(codigo_partida, data, socket){
+        console.log('Antes updateActive')
+        socket.on('updateActive',()=> {
+            console.log('Antes update')
+            this.sockets.to(`${codigo_partida}`).emit('update', data)
+        })
+        this.sockets.to(`${codigo_partida}`).emit('redirectToGame', data)
     },
-    async startGame(codigo_partida, players){
-        //crearPartida(players,codigo_partida)
-        this.sockets.to(`${codigo_partida}`).emit('redirectToGame', codigo_partida)
+    async startGame(codigo_partida, players, socket){
+        console.log('Antes redirectToGame')
+        let game = CatanModule.crearPartida(players,codigo_partida)
+        this.sendGame(codigo_partida, game, socket)
+        console.log('Game: ', game)
+        console.log('Board: ', game.board)
     }     
 }
 
