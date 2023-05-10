@@ -9,7 +9,19 @@ const User = require("../controllers/user.controller");
 const UserModel = require("../models/user.model");
 const CatanModule = require("../catan/move");
 const { notify } = require("../routes");
+const { plugin } = require("mongoose");
 
+let turnNumber = 0;
+
+function orden(array) {
+    console.log(turnNumber);
+    let previousTurn = array[turnNumber];
+    turnNumber = turnNumber + 1;
+    if (turnNumber === 4) {
+        turnNumber = 0;
+    }
+    return previousTurn; 
+} 
 
 
 
@@ -37,7 +49,7 @@ const Socket = {
                 sockets.in(`${codigo_partida}`).emit('update',CatanModule.move(partida.game , decoded, move))
                 
                 for (jugador in game.jugadores ){
-                    socketes.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, game))
+                    sockets.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, game))
 
                 }
                 // sockets.in(codigo_partida).emit('update',partida.game)
@@ -133,6 +145,8 @@ const Socket = {
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
             socket.on('startGame',(codigo_partida,players)=> 
                 this.startGame(codigo_partida, players, socket))
+            socket.on('esTuTurno',(codigo_partida,players) =>
+                this.mandarTurno(codigo_partida, players))
             socket.on("disconnect", () => console.log('socket cerrado'))    
         })
     },
@@ -153,21 +167,34 @@ const Socket = {
         this.sockets.to(`${codigo_partida}`).emit('notify', data)
         
     },
-    async sendGame(codigo_partida, data, socket){
+    async sendGame(codigo_partida, game, socket){
         console.log('Antes updateActive')
         socket.on('updateActive',()=> {
             console.log('Antes update')
-            this.sockets.to(`${codigo_partida}`).emit('update', data)
+            // this.sockets.to(`${codigo_partida}`).emit('update', game)
         })
-        this.sockets.to(`${codigo_partida}`).emit('redirectToGame', data)
+        this.sockets.to(`${codigo_partida}`).emit('redirectToGame', game)
     },
     async startGame(codigo_partida, players, socket){
         console.log('Antes redirectToGame')
         let game = CatanModule.crearPartida(players,codigo_partida)
         this.sendGame(codigo_partida, game, socket)
-        console.log('Game: ', game)
-        console.log('Board: ', game.board)
-    }     
+        //console.log('Game: ', game)
+        //console.log('Board: ', game.board)
+    
+        console.log(players)
+        console.log('Antes de mandar turno en sendgame')
+        this.mandarTurno(codigo_partida, players)
+        console.log('Despues de mandar turno en sendgame')
+    },
+
+    async mandarTurno(codigo_partida, players) {
+        console.log('Antes de mandar turno en mandarturno')
+        var proximoJugador = orden(players)
+        console.log(proximoJugador);
+        this.sockets.to(`${codigo_partida}`).emit('esTuTurno', proximoJugador)
+        console.log('Despyes de mandar turno en mandarturno')
+    }
 }
 
 
