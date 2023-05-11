@@ -59,7 +59,6 @@ function create_game(code) {
     return {
         //cartas_desarrollo: [],
         players: [],
-        order: [],
         board: create_board(),      // No es necesario un tablero nada más crear la partida.
         code: code,       // Hay que discutir muchas cosas sobre esto...
         current_turn : 0, //

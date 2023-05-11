@@ -123,8 +123,7 @@ const Game = {
                     // comprobar si es el anfitrion
                     console.log(`comienza la partida ${game.codigo_partida}`)
 
-                    game.game = {}
-                    // game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
+                    game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
                     game.comenzada = true 
                     game.save()
                     Socket.sendGame(game.codigo_partida, game.game)
@@ -146,8 +145,8 @@ const Game = {
 
         }
         catch(e){
-             res.status(500).json(err)
-             console.error(err)
+            res.status(500).json(err)
+            console.error(err)
         }
     }
 }

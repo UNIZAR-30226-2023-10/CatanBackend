@@ -26,18 +26,18 @@ const Socket = {
                 })
                 console.log(partida.jugadores)
                 if (!partida.jugadores.includes(decoded)){
-                    socket.emit('error', 'you arent player this game')
+                    socket.emit('error', 'you aren\'t a player of this game')
                     return
                 }
                 if(!partida.comenzada){
-                    socket.emit('error', 'the game havent stared yet')
+                    socket.emit('error', 'the game haven\'t stared yet')
                     return
                 }
                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                sockets.in(`${codigo_partida}`).emit('update',CatanModule.move(partida.game , decoded, move))
+                this.sockets.in(`${codigo_partida}`).emit('update',CatanModule.move(partida.game , decoded, move))
                 
                 for (jugador in game.jugadores ){
-                    socketes.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, game))
+                    this.sockets.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, game))
 
                 }
                 // sockets.in(codigo_partida).emit('update',partida.game)
@@ -57,7 +57,7 @@ const Socket = {
                 })
 
                 if (!partida.jugadores.includes(decoded.id)){
-                    socket.emit('error', 'you arent player this game')
+                    socket.emit('error', 'you aren\'t a player of this game')
                     return
                 }
 
@@ -130,10 +130,8 @@ const Socket = {
         this.sockets.on("connection", (socket) => {
             // enlazar el socket con la partida
             console.log('nuevo socket abierto: ', socket.rooms)
-            socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
-            socket.on('startGame',(codigo_partida,players)=> 
-                this.startGame(codigo_partida, players, socket))
-            socket.on("disconnect", () => console.log('socket cerrado'))    
+            socket.on('disconnect', () => console.log('socket cerrado')) 
+            socket.on('joinGame', (token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
         })
     },
     async sendNewPlayer(codigo_partida, data){
@@ -153,21 +151,10 @@ const Socket = {
         this.sockets.to(`${codigo_partida}`).emit('notify', data)
         
     },
-    async sendGame(codigo_partida, data, socket){
-        console.log('Antes updateActive')
-        socket.on('updateActive',()=> {
-            console.log('Antes update')
-            this.sockets.to(`${codigo_partida}`).emit('update', data)
-        })
+    async sendGame(codigo_partida, data){
+        console.log("MANDANDO LA PARTIDAAAAAAAAAAAAA!")
         this.sockets.to(`${codigo_partida}`).emit('redirectToGame', data)
-    },
-    async startGame(codigo_partida, players, socket){
-        console.log('Antes redirectToGame')
-        let game = CatanModule.crearPartida(players,codigo_partida)
-        this.sendGame(codigo_partida, game, socket)
-        console.log('Game: ', game)
-        console.log('Board: ', game.board)
-    }     
+    }   
 }
 
 
