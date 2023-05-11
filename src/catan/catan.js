@@ -808,6 +808,7 @@ function next_turn(game) {
             game.current_turn = (game.current_turn+1)%(game.players.length)
         }
     }
+    return game
 }
 
 function win_check(game, id){//faltan los puntos por objetos

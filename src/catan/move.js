@@ -18,7 +18,7 @@ const  {
 
 } = require( './catan.js');
 
-const MoveType = ( './movesTypes.js')
+const MoveType = require( './movesTypes.js')
 let move = {
     id: 0,  
     coords: {
@@ -38,21 +38,27 @@ let move = {
 const CatanModule = {
 
     move (id, move, game){
+        console.log(move.id)
+
         switch(move.id){
 
             case MoveType.roll_dices:
+                console.log("roll_dices")
                 roll_dices(game);
                 break;
 
             case MoveType.build_village:
+                console.log("build_village")
                 build_village( game,id,move.coords);
                 break;
 
             case MoveType.build_city:
+                console.log("build_city")
                 build_city( game,id,move,move.coords);
                 break;
             
             case MoveType.build_road:
+                console.log("build_road")
                 const coordsRoad = [
                     {x: move.coords.x, y: move.coords.y},
                     {x: move.coords2.x, y: move.coords2.y},
@@ -61,35 +67,46 @@ const CatanModule = {
                 break;
 
             case MoveType.buy_cards:
+                console.log("buy_cards")
                 buy_cards( game,id);
                 break;
             
             case MoveType.monopoly:
+                console.log("monopoly")
                 monopoly( game, id, move.resource);
                 break;
             
             case MoveType.discovery:
+                console.log("discovery")
                 discovery( game, id, move.resource, move.resource2);
                 break;
             
             case MoveType.knight:
+                console.log("knight")
                 knight(game, id, move.hexagon, move.idPlayer);
                 break;
             
             case MoveType.order_selection:
+                console.log("order_selection")
                 order_selection(game,id);
                 break;
 
             case MoveType.change_recourse:
+                console.log("change_recourse")
                 change_recourse(game,id,resource, resource2);
                 break;
             
             case MoveType.next_turn:
+                console.log("next_turn")
                 next_turn(game);
                 break;
             case MoveType.first_roll:
+                console.log("first_roll")
                 first_roll(game,id); 
+            default: 
+                console.log("id incorrecto")
         }
+        return game
     },
 
     findMoves(id,game){
