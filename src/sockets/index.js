@@ -89,7 +89,7 @@ const Socket = {
     },
     async joinGame(socket, token, codigo_partida){
         // verificamos el token
-        jwt.verify(token, jwt_secret, async (err, decoded, socket) => {
+        jwt.verify(token, jwt_secret, async (err, decoded) => {
             if (err) {
                 console.log(err)
                 socket.emit('error','invalid_token')
@@ -100,6 +100,9 @@ const Socket = {
                 let partida = await GamesModel.findOne({
                     codigo_partida: codigo_partida
                 })
+
+                console.log (partida)
+
                 if (!partida.jugadores.includes(decoded.id)){
                     socket.emit('error', 'You aren\'t player of this game')
                    return

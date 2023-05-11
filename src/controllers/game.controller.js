@@ -25,12 +25,12 @@ const Game = {
             }
 
             let user = await UserModel.findById(res.locals.decoded.id)
-            console.log("USUARIO ENCONTRADO (CREATE): ", user)
+            //console.log("USUARIO ENCONTRADO (CREATE): ", user)
             //creamos una partida y la guardamos
             let game = new GamesModel({
                 codigo_partida : codigoPartida,
-                anfitrion : user.username,
-                jugadores: [user.username],
+                anfitrion : res.locals.decoded.id,
+                jugadores: [res.locals.decoded.id],
                 comenzada : false
             })
 
@@ -62,27 +62,43 @@ const Game = {
             let game = await GamesModel.findOne({
                 codigo_partida : req.body.codigo_partida
             })
+
             if (game){
                 let user = await UsersModel.findById(res.locals.decoded.id)
-                console.log("EL JUEGO (JOIN): ", game, user)
+                //console.log("EL JUEGO (JOIN): ", game, user)
                 // Si el jugador ya se encuentra en la partida devolvemos la respuesta anterior
-                if (game.jugadores.includes(user.username)){
+                if (game.jugadores.includes(res.locals.decoded.id)){
+                    let jugadores = []
+                    for (id of game.jugadores){
+                        let j = await UserModel.findById(id)
+                        jugadores.push(j.username)
+                    }
+                    console.log(jugadores)
                     return res.status(201).json({
                         status: 'success',
-                        jugadores: game.jugadores
+                        jugadores: jugadores
                     })
                 }
                 //comprobamos si la partida esta llena y si no ha empezado
                 if (game.jugadores.length < 4 && !game.comenzada) {
                     // Nuevo jugador en la partida:
-                    game.jugadores.push(user.username)
+                    game.jugadores.push(user._id)
                     await game.save()
+                    //console.log(game) 
 
                     Socket.sendNewPlayer(req.body.codigo_partida, { username : user.username })
 
+                    let jugadores = []
+                    
+                    for (id of game.jugadores){
+                        let j = await UserModel.findById(id)
+                        jugadores.push(j.username)
+                    }
+
+                    console.log (jugadores)
                     return res.status(200).json({
                         status: 'success', 
-                        jugadores : game.jugadores
+                        jugadores : jugadores
                     })
                 }
                 else {
