@@ -27,11 +27,11 @@ const Socket = {
                 console.log(partida.jugadores)
                 /*
                 if (!partida.jugadores.includes(decoded)){
-                    socket.emit('error', 'you arent player this game')
+                    socket.emit('error', 'you aren\'t a player of this game')
                     return
                 }
                 if(!partida.comenzada){
-                    socket.emit('error', 'the game havent stared yet')
+                    socket.emit('error', 'the game haven\'t stared yet')
                     return
                 }*/
                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
@@ -59,7 +59,7 @@ const Socket = {
                 })
 
                 if (!partida.jugadores.includes(decoded.id)){
-                    socket.emit('error', 'you arent player this game')
+                    socket.emit('error', 'you aren\'t a player of this game')
                     return
                 }
 
