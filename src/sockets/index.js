@@ -24,8 +24,9 @@ const Socket = {
                 let partida = await GamesModel.findOne({
                     codigo_partida: codigo_partida
                 })
+
                 console.log(partida.jugadores)
-                /*
+
                 if (!partida.jugadores.includes(decoded)){
                     socket.emit('error', 'you aren\'t a player of this game')
                     return
@@ -33,22 +34,24 @@ const Socket = {
                 if(!partida.comenzada){
                     socket.emit('error', 'the game haven\'t stared yet')
                     return
-                }*/
+                }
                 // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                CatanModule.move(decoded, move, partida.game)
-                this.sockets.in(`${codigo_partida}`).emit('update',partida.game )
+                partida.game = CatanModule.move(decoded, move, partida.game)
+                await partida.save()
+
+                this.sendGame(codigo_partida, partida.game)
                 
                 for (jugador in partida.jugadores ){
+
                     this.sockets.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, partida.game))
 
                 }
-                // sockets.in(codigo_partida).emit('update',partida.game)
-                // sockets.emit('notify')
             }
         })
     },
     async msg (socket, token, codigo_partida, msg){
-        jwt.verify(token, jwt_secret, async (err, decoded) => {
+
+        jwt.verify(token, jwt_secret, async (err, decoded, socket) => {
             if (err) {
                 socket.emit('error','invalid_token')
             }
@@ -86,7 +89,7 @@ const Socket = {
     },
     async joinGame(socket, token, codigo_partida){
         // verificamos el token
-        jwt.verify(token, jwt_secret, async (err, decoded) => {
+        jwt.verify(token, jwt_secret, async (err, decoded, socket) => {
             if (err) {
                 console.log(err)
                 socket.emit('error','invalid_token')
@@ -97,10 +100,10 @@ const Socket = {
                 let partida = await GamesModel.findOne({
                     codigo_partida: codigo_partida
                 })
-                //if (!partida.jugadores.includes(decoded.id)){
-                //    socket.emit('error', 'You aren\'t player of this game')
-                //    return
-                //}
+                if (!partida.jugadores.includes(decoded.id)){
+                    socket.emit('error', 'You aren\'t player of this game')
+                   return
+                }
                 
                 // socket.emit('ok')
                 // anyadimos el socket a las salas correspondientes
@@ -133,12 +136,10 @@ const Socket = {
             // enlazar el socket con la partida
             console.log('nuevo socket abierto: ', socket.rooms)
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
-            socket.on('startGame',(codigo_partida,players)=> 
-                this.startGame(codigo_partida, players, socket))
-            socket.on('move',(token, codigo_partida, move)=> this.move(socket,token, codigo_partida ,move))
             socket.on("disconnect", () => console.log('socket cerrado'))    
         })
     },
+
     async sendNewPlayer(codigo_partida, data){
         try{
             console.log("Mando un nuevo jugador?")
