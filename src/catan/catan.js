@@ -55,7 +55,8 @@ function rcoor_toString(game, coords) {
 // - Codigo.
 // - Turno actual de partida.
 // - Si esta comenzada o no (phase)
-function create_game(code) {  
+function create_game(code) { 
+
     return {
         //cartas_desarrollo: [],
         players: [],
@@ -782,14 +783,14 @@ const rl = require('readline').createInterface({
 });
 
 function next_turn(game) {
-    if (game.phase === 1) {
+    if (game.phase === 0) {
         if (game.current_turn !== game.players.length-1) {
             game.current_turn++
         } else {
             console.log("=========================== DE FASE 1 a FASE 2 ===========================")
-            game.phase = 2
+            game.phase = 1
         }
-    } else if (game.phase === 2) {
+    } else if (game.phase === 1) {
         if (game.current_turn !== 0) {
             game.current_turn--
         } else {
@@ -799,7 +800,7 @@ function next_turn(game) {
             })
             get_resources(game, 0)
             console.log(game.players)
-            game.phase = 3
+            game.phase = 2
         }
     } else {
         if(win_check){

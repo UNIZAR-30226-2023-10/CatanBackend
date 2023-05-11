@@ -37,7 +37,7 @@ let move = {
 
 const CatanModule = {
 
-    movimiento (id, move, game){
+    move (id, move, game){
         switch(move.id){
 
             case MoveType.roll_dices:
@@ -103,6 +103,7 @@ const CatanModule = {
         for (j in jugadores){
             game.players.push(create_player(j))
         }
+        game.order=[game.players[0].id,game.players[1].id,game.players[2].id,game.players[3].id]
         console.log(jugadores)
         start_game(game)
         console.log(code)
