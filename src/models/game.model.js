@@ -34,7 +34,9 @@ GameSchema.pre('save', function(next) {
     console.log("guardado de partida")
     var partida = this
     var jugadores = []
-    if(partida.game && partida.game.jugadore){
+    console.log(partida)
+    if(partida.game)
+        if(partida.game.jugadore)
             for (i in jugadores){
                 partida.game.jugadores[i] = {
                     id: partida.game.jugadores[i].id,
@@ -50,29 +52,29 @@ GameSchema.pre('save', function(next) {
                 }
 
             }
-
-    }
-    return newt()
+    return next()
 })
 
 
 GameSchema.post('find', function(result) {
-    if(result.game && result.game.jugadore){
-        for (i in jugadores){
-            result.game.jugadores[i] = {
-                id: result.game.jugadores[i].id,
-                free_nodes: new Set(result.game.jugadores[i].free_nodes),
-                free_roads: new Set(result.game.jugadores[i].free_roads),
-                villages: new Set(result.game.jugadores[i].villages),
-                cities: new Set(result.game.jugadores[i].cities),
-                roads: new Set(result.game.jugadores[i].roads),
-                resources: result.game.jugadores[i].resources,
-                growth_cards: result.game.jugadores[i].growth_cards,
-                used_knights: result.game.jugadores[i].used_knights,
-                first_roll : result.game.jugadores[i].first_roll
-            }
+    console.log("busqueda de partida")
+    if(result.game)
+        if(result.game.jugadore){
+            for (i in jugadores){
+                result.game.jugadores[i] = {
+                    id: result.game.jugadores[i].id,
+                    free_nodes: new Set(result.game.jugadores[i].free_nodes),
+                    free_roads: new Set(result.game.jugadores[i].free_roads),
+                    villages: new Set(result.game.jugadores[i].villages),
+                    cities: new Set(result.game.jugadores[i].cities),
+                    roads: new Set(result.game.jugadores[i].roads),
+                    resources: result.game.jugadores[i].resources,
+                    growth_cards: result.game.jugadores[i].growth_cards,
+                    used_knights: result.game.jugadores[i].used_knights,
+                    first_roll : result.game.jugadores[i].first_roll
+                }
 
-        }
+            }
     }
 })
 
