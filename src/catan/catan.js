@@ -274,7 +274,6 @@ function create_board() {
         thief_biome: -1,
         nodes: nodes,
         roads: edges,
-        buildings: new Set(),
         growth_cards: {
             Caballero : 14,
             Carreteras : 2,
@@ -349,9 +348,11 @@ function total_resources(player) { //TODO:Player no deberia ser el id?? No, es u
 
 
 function get_resources(game, res) {
+    console.log
     if (game.phase === 2) {
         for (let i = 0; i < game.players.length; i++) {
-            let villages_arr = [...game.players[i].villages]
+            //let villages_arr = [...game.players[i].villages]
+            let villages_arr
             last_built = villages_arr[villages_arr.length-1]
             game.board.nodes[last_built].biomes.forEach((biome) => {
                 game.players[i].resources[game.board.biomes[biome].resource]++
@@ -359,6 +360,7 @@ function get_resources(game, res) {
         }
     } else {
         for (let i = 0; i < game.players.length; i++){
+            console.log("game.players[i].villages",game.players[i].villages)
             for (let building of game.players[i].villages) {
                 game.board.nodes[building].biomes.forEach((biome) => {
                     if (game.board.biomes[biome].token === res) {
@@ -458,8 +460,12 @@ function roll_dices(game) {
 function build_village(game, id, coords) {
     let index = game.players.findIndex(player => player.id === id)
     let x = coords.x, y = coords.y, ncoor = ncoor_toString(coords), rcoor = ''
-
     game.board.nodes[ncoor].building = { player: id, type: 'Village' }
+    console.log(game.players[index])
+    console.log(index)
+    console.log('id: ',id)
+    console.log('ncor',ncoor)
+    console.log('game.players[index].villages',game.players[index].villages)
     game.players[index].villages.add(ncoor)
     // COSTO: Trigo=1, Madera=1, Ladrillo=1, Lana=1
     if (game.phase === 3) {

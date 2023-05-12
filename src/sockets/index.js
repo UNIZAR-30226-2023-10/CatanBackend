@@ -41,7 +41,8 @@ const Socket = {
                     console.log("Patida previa")
                     console.log(partida.game.current_turn, partida._id)
                     console.log("-------------------")
-                    let game = CatanModule.move(decoded, move, partida.game)
+                    
+                    let game = CatanModule.move(decoded.id, move, partida.game)
                     partida = await GamesModel.findOneAndUpdate(
                         {codigo_partida: codigo_partida},
                         { game: game },
@@ -178,6 +179,7 @@ const Socket = {
         
     },
     async sendGame(codigo_partida, data){
+        console.log("SendGame")
         this.sockets.to(`${codigo_partida}`).emit('update', data)
     },
     async startGame(codigo_partida, players){
@@ -188,7 +190,5 @@ const Socket = {
         console.log('Board: ', game.board)
     }     
 }
-
-
 
 module.exports = Socket

@@ -138,7 +138,7 @@ const Game = {
                 if (game.jugadores.length > 2) {
                     // comprobar si es el anfitrion
                     console.log(`comienza la partida ${game.codigo_partida}`)
-
+                    
                     game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
                     game.comenzada = true 
                     game.save()

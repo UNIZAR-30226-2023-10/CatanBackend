@@ -48,7 +48,9 @@ const CatanModule = {
                 break;
 
             case MoveType.build_village:
-                console.log("build_village")
+                console.log("build_village: ",move.coords)
+                console.log("id",id)
+                //console.log(game)
                 build_village( game,id,move.coords);
                 break;
 
@@ -103,6 +105,7 @@ const CatanModule = {
             case MoveType.first_roll:
                 console.log("first_roll")
                 first_roll(game,id); 
+                break;
             default: 
                 console.log("id incorrecto")
         }
@@ -118,7 +121,8 @@ const CatanModule = {
         let game = create_game(code)
         
         for (j in jugadores){
-            game.players.push(create_player(j))
+            console.log(jugadores)
+            game.players.push(create_player(jugadores[j]))
         }
         game.order=[game.players[0].id,game.players[1].id,game.players[2].id,game.players[3].id]
         console.log(jugadores)
