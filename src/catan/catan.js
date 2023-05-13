@@ -84,11 +84,11 @@ function create_game(code) {
 function create_player(id) {
     return {
         id: id,
-        free_nodes: new Set(),
-        free_roads: new Set(),
-        villages: new Set(),
-        cities: new Set(),
-        roads: new Set(),
+        free_nodes: new Set([3]),
+        free_roads: new Set([3]),
+        villages: new Set([3]),
+        cities: new Set([3]),
+        roads: new Set([3]),
         resources: null,
         growth_cards: {
             'Caballeros': 0,

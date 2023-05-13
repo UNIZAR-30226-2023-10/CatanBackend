@@ -23,7 +23,6 @@ const Game = {
                     codigo_partida : codigoPartida
                 })
             }
-
             let user = await UserModel.findById(res.locals.decoded.id)
             //console.log("USUARIO ENCONTRADO (CREATE): ", user)
             //creamos una partida y la guardamos

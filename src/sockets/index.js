@@ -36,21 +36,11 @@ const Socket = {
                         this.sockets.to(`${decoded.id}_${codigo_partida}`).emit('error', 'the game haven\'t stared yet')
                         return
                     }
-                    // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                    console.log("-------------------")
-                    console.log("Patida previa")
-                    console.log(partida.game.current_turn, partida._id)
-                    console.log("-------------------")
                     
-                    let game = CatanModule.move(decoded.id, move, partida.game)
-                    partida = await GamesModel.findOneAndUpdate(
-                        {codigo_partida: codigo_partida},
-                        { game: game },
-                        {new : true}
-                        )
-                    console.log("Partida actual")
-                    console.log(partida.game.current_turn)
-                    console.log("-------------------")
+                    partida.game = CatanModule.move(decoded.id, move, partida.game)
+                    
+                    partida = await partida.save()
+
                     this.sendGame(codigo_partida, partida.game)
                     
                     for (jugador in partida.jugadores ){

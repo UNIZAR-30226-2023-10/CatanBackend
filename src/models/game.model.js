@@ -31,47 +31,44 @@ const GameSchema = mongoose.Schema({
 })
 
 GameSchema.pre('save', function(next) {
-    console.log("guardado de partida")
     var partida = this
     var jugadores = []
-    console.log(partida)
     if(partida.game)
-        if(partida.game.jugadore)
-            for (i in jugadores){
-                partida.game.jugadores[i] = {
-                    id: partida.game.jugadores[i].id,
-                    free_nodes: [...partida.game.jugadores[i].free_nodes],
-                    free_roads: [...partida.game.jugadores[i].free_roads],
-                    villages: [...partida.game.jugadores[i].villages],
-                    cities: [...partida.game.jugadores[i].cities],
-                    roads: [...partida.game.jugadores[i].roads],
-                    resources: partida.game.jugadores[i].resources,
-                    growth_cards: partida.game.jugadores[i].growth_cards,
-                    used_knights: partida.game.jugadores[i].used_knights,
-                    first_roll : partida.game.jugadores[i].first_roll
+        if(partida.game.players)
+            for (i in partida.game.players){
+                partida.game.players[i] = {
+                    id: partida.game.players[i].id,
+                    free_nodes: [...partida.game.players[i].free_nodes],
+                    free_roads: [...partida.game.players[i].free_roads],
+                    villages: [...partida.game.players[i].villages],
+                    cities: [...partida.game.players[i].cities],
+                    roads: [...partida.game.players[i].roads],
+                    resources: partida.game.players[i].resources,
+                    growth_cards: partida.game.players[i].growth_cards,
+                    used_knights: partida.game.players[i].used_knights,
+                    first_roll : partida.game.players[i].first_roll
                 }
-
             }
     return next()
 })
 
 
-GameSchema.post('find', function(result) {
-    console.log("busqueda de partida")
+GameSchema.post(/find*/, async function(result) {
+    console.log("post find")
     if(result.game)
-        if(result.game.jugadore){
-            for (i in jugadores){
-                result.game.jugadores[i] = {
-                    id: result.game.jugadores[i].id,
-                    free_nodes: new Set(result.game.jugadores[i].free_nodes),
-                    free_roads: new Set(result.game.jugadores[i].free_roads),
-                    villages: new Set(result.game.jugadores[i].villages),
-                    cities: new Set(result.game.jugadores[i].cities),
-                    roads: new Set(result.game.jugadores[i].roads),
-                    resources: result.game.jugadores[i].resources,
-                    growth_cards: result.game.jugadores[i].growth_cards,
-                    used_knights: result.game.jugadores[i].used_knights,
-                    first_roll : result.game.jugadores[i].first_roll
+        if(result.game.players){
+            for (i in result.game.players){
+                result.game.players[i] = {
+                    id: result.game.players[i].id,
+                    free_nodes: new Set(result.game.players[i].free_nodes),
+                    free_roads: new Set(result.game.players[i].free_roads),
+                    villages: new Set(result.game.players[i].villages),
+                    cities: new Set(result.game.players[i].cities),
+                    roads: new Set(result.game.players[i].roads),
+                    resources: result.game.players[i].resources,
+                    growth_cards: result.game.players[i].growth_cards,
+                    used_knights: result.game.players[i].used_knights,
+                    first_roll : result.game.players[i].first_roll
                 }
 
             }

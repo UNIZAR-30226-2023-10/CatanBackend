@@ -25,6 +25,8 @@ router.post('/test', async (req, res) => {
 
     await partida.save()
 
+    // console.log(partida2.game.players[0].free_roads)
+
     return res.status(200).json({
         codigo_partida: codigoPartida,
         game : game

@@ -119,10 +119,9 @@ const CatanModule = {
     crearPartida(jugadores, code){
         
         let game = create_game(code)
-        
         for (j in jugadores){
-            console.log(jugadores)
-            game.players.push(create_player(jugadores[j]))
+            let jugador = create_player(jugadores[j])
+            game.players.push(jugador)
         }
         game.order=[game.players[0].id,game.players[1].id,game.players[2].id,game.players[3].id]
         console.log(jugadores)

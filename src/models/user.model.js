@@ -1,6 +1,6 @@
 const  mongoose = require('mongoose')
 const bcrypt    = require('bcrypt')
-const mongoose_fuzzy_searching = require('mongoose-fuzzy-searching-v3')
+// const mongoose_fuzzy_searching = require('mongoose-fuzzy-searching-v3')
 const emailRegex =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 const UserSchema = mongoose.Schema({
@@ -44,7 +44,7 @@ UserSchema.pre('save', function (next) {
     })
 })
 
-UserSchema.plugin( mongoose_fuzzy_searching, {fields : [ 'username' ]})
+// UserSchema.plugin( mongoose_fuzzy_searching, {fields : [ 'username' ]})
 
 
 const UserModel = mongoose.model('User', UserSchema)
