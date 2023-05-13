@@ -55,20 +55,49 @@ function rcoor_toString(game, coords) {
 // - Codigo.
 // - Turno actual de partida.
 // - Si esta comenzada o no (phase)
-function create_game(code) { 
+function create_game(code, players) { 
 
-    return {
-        //cartas_desarrollo: [],
+    let game    = {
         players: [],
         board: create_board(),      // No es necesario un tablero nada más crear la partida.
         code: code,       // Hay que discutir muchas cosas sobre esto...
         current_turn : 0, //
-        phase: 0          // Indica el estado de la partida:
+        phase: 0,         // Indica el estado de la partida:
                           // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego.
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
                           // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
                           // - (3). Resto de rondas.
     }
+    for (let i = 0; i < players.length; i++) {
+        game.players.push({
+            name: players[i],
+            free_nodes: Object.keys(game.board.nodes),
+            free_roads: [],
+            villages: [],
+            cities: [],
+            roads: [],
+            resources: {
+                'Trigo': 0,
+                'Madera': 0,
+                'Ladrillo': 0,
+                'Piedra': 0,
+                'Lana': 0
+            },
+            growth_cards: {
+                'Caballeros': 0,
+                'Carreteras': 0,
+                'Monopolios': 0,
+                'Descubrimientos': 0,
+                'Puntos': 0
+            },
+            // TODO: Yo sacaria este valor fuera de growth_cards
+            // Ya esta sacado.
+            used_knights: 0,
+            first_roll: [], // No se que es esto.
+        })
+    }
+    console.log('tablero creado')
+    return game
 }
 
 // Un jugador tiene:

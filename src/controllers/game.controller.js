@@ -1,8 +1,10 @@
 const GamesModel = require('../models/game.model')
 const UsersModel = require('../models/user.model')
 const CatanModule = require('../catan/move')
+const { create_game } = require('../catan/catan')
 const Socket = require('../sockets/index')
 const UserModel = require('../models/user.model')
+const User = require('./user.controller')
 // TODO : importar jugabilidad
 // const CatanModule = require() 
 const max = 999999
@@ -139,9 +141,15 @@ const Game = {
                     // comprobar si es el anfitrion
                     console.log(`comienza la partida ${game.codigo_partida}`)
 
-                    game.game = CatanModule.crearPartida(game.jugadores, game.codigo_partida)
+                    let players_names = []
+                    for (id of game.jugadores) {
+                        players_names.push((await UserModel.findById(id)).username)
+                    }
+                    game.game = create_game(game.codigo_partida, players_names)
                     game.comenzada = true 
                     game.save()
+
+                    console.log('LA PARTIDA: ', game.game.players[0])
                     Socket.sendGame(game.codigo_partida, game.game)
                     return res.status(200).json({ 
                         status: 'success',
