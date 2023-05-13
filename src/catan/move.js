@@ -1,6 +1,6 @@
 const  { notify }  = require('../routes/auth.routes.js');
 const  { 
-    roll_dices, 
+    roll_the_dices, 
     build_village, 
     build_city,
     build_road,
@@ -21,18 +21,20 @@ const  {
 const MoveType = require( './movesTypes.js')
 let move = {
     id: 0,  
-    coords: {
-        x:0,
-        y:0,
-    },
-    coords2: {
-        x:0,
-        y:0,
-    },
+    coords_0: '',
+    coords_1: '',
+    //coords: {
+    //    x:0,
+    //    y:0,
+    //},
+    //coords2: {
+    //    x:0,
+    //    y:0,
+    //},
     resource: 'None',   //Tipo de recurso
     resource2: 'None',  //Tipo de recurso
     hexagon: 0,         //Hexagono donde ponen el ladron
-    idPlayer: 0,       //Id del jugador que quiere robar
+    idPlayer: 0       //Id del jugador que quiere robar
 }
 
 const CatanModule = {
@@ -40,16 +42,15 @@ const CatanModule = {
     move (id, move, game){
         console.log(move.id)
 
-        switch(move.id){
-
+        switch(move.id) {
             case MoveType.roll_dices:
-                console.log("roll_dices")
-                roll_dices(game);
+                roll_the_dices(game);
+                console.log("Roll dices: ", game.dices_res)
                 break;
 
             case MoveType.build_village:
                 console.log("build_village")
-                build_village( game,id,move.coords);
+                build_village(game, id, move.coords_0);
                 break;
 
             case MoveType.build_city:
@@ -59,11 +60,11 @@ const CatanModule = {
             
             case MoveType.build_road:
                 console.log("build_road")
-                const coordsRoad = [
-                    {x: move.coords.x, y: move.coords.y},
-                    {x: move.coords2.x, y: move.coords2.y},
-                ];
-                build_road( game, id, coordsRoad);
+                //const coordsRoad = [
+                //    {x: move.coords.x, y: move.coords.y},
+                //    {x: move.coords2.x, y: move.coords2.y},
+                //];
+                //build_road( game, id, coordsRoad);
                 break;
 
             case MoveType.buy_cards:

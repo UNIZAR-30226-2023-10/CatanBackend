@@ -10,9 +10,6 @@ const UserModel = require("../models/user.model");
 const CatanModule = require("../catan/move");
 const { notify } = require("../routes");
 
-
-
-
 const Socket = {   
     async move(socket, token, codigo_partida, move){ 
         try{ 
@@ -37,19 +34,19 @@ const Socket = {
                         return
                     }
                     // TODO: recoger resultados, guardar patida , enviar notificaciones y partida
-                    console.log("-------------------")
-                    console.log("Patida previa")
-                    console.log(partida.game.current_turn, partida._id)
-                    console.log("-------------------")
-                    let game = CatanModule.move(decoded, move, partida.game)
+                    //console.log("-------------------")
+                    //console.log("Partida previa")
+                    //console.log(partida.game.current_turn, partida._id)
+                    //console.log("-------------------")
+                    let game = CatanModule.move((await UserModel.findById(decoded.id)).username, move, partida.game)
                     partida = await GamesModel.findOneAndUpdate(
-                        {codigo_partida: codigo_partida},
+                        { codigo_partida: codigo_partida },
                         { game: game },
-                        {new : true}
-                        )
-                    console.log("Partida actual")
-                    console.log(partida.game.current_turn)
-                    console.log("-------------------")
+                        { new : true }
+                    )
+                    //console.log("Partida actual")
+                    //console.log(partida.game.current_turn)
+                    //console.log("-------------------")
                     this.sendGame(codigo_partida, partida.game)
                     
                     for (jugador in partida.jugadores ){
@@ -127,9 +124,9 @@ const Socket = {
                 socket.join(`${codigo_partida}`)
 
                 //anyadimos las funcionales de move y msg
-                socket.on('move', (token, codigo_partida, move) => {
-                    this.move(socket, token, codigo_partida, move)
-                })  
+                //socket.on('move', (token, codigo_partida, move) => {
+                //    this.move(socket, token, codigo_partida, move)
+                //})  
                 socket.on('msg',  (token, codigo_partida, msg) => this.msg (socket, token, codigo_partida, msg))
 
                 //si ya esta comenzada se necesita una reconexion 

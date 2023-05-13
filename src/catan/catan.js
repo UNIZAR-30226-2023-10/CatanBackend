@@ -23,8 +23,22 @@ function generate_code() {
     return code;
 }
 
+// ============================================================================
+// ^^^^^^^^^^^^^^^^^^^^ CODIGO A LIMPIAR ^^^^^^^^^^^^^^^^^^^^
+// ============================================================================
+
+
+// ============================================================================
+// FUNCIONES AUXILIARES
+// ============================================================================
+
 function ncoor_toString(coords) {
     return coords.x.toString() + "," + coords.y.toString()
+}
+
+function string_toNcoor(coords) {
+    let splited_coords = coords.split(',')
+    return {x: parseInt(splited_coords[0]), y: parseInt(splited_coords[1]) }
 }
 
 function rcoor_toString(game, coords) {
@@ -42,6 +56,11 @@ function rcoor_toString(game, coords) {
             return undefined
         }
     }
+}
+
+function string_toRcoor(coords) {
+    let splited_coords = coords.split(':')
+    return [string_toNcoor(splited_coords[0]), string_toNcoor(splited_coords[1])]
 }
 
 //=============================================================================
@@ -93,12 +112,137 @@ function create_game(code, players) {
             // TODO: Yo sacaria este valor fuera de growth_cards
             // Ya esta sacado.
             used_knights: 0,
-            first_roll: [], // No se que es esto.
+            dices_res: []
         })
     }
     console.log('tablero creado')
     return game
 }
+
+function roll_the_dices(game) {
+    game.dices_res = [random(1,6), random(1,6)]
+}
+
+/**
+ * Función para construir un pueblo. Esta función SOLO SE LLAMA cuando se sabe
+ * de antemano que puede seguir construyendo.
+ * 
+ * @param {*} game      Partida sobre la que transcurre el juego.
+ * @param {*} id        Jugador que ha pedido construir.
+ * @param {*} coords    Coordenadas del nodo donde construir (como string).
+ */
+function build_village(game, player, ncoor) {
+    console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toNcoor(ncoor))
+
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    let coords = string_toNcoor(ncoor), x = coords.x, y = coords.y, rcoor = ''
+
+    // Adding the new village:
+    let villages_set = new Set(game.players[i].villages)
+    game.board.nodes[ncoor].building = { player: player, type: 'Village'}
+    villages_set.add(ncoor)
+    game.players[i].villages = [...villages_set]
+
+    // Adding the new roads:
+    let free_roads_set = new Set(game.players[i].free_roads)
+    if (x%2 === 0) {
+        if (x-1 > 0) {
+            rcoor = rcoor_toString(game, [coords, {x:x-1, y:y}])
+            if (game.board.roads[rcoor].id == null) {
+                free_roads_set.add(rcoor)
+            }
+        }
+        if (y-1 >= borders[x+1][0]) {
+            rcoor = rcoor_toString(game, [coords, {x:x+1, y:y-1}]);
+            if (game.board.roads[rcoor].id == null) {
+                free_roads_set.add(rcoor)
+            }
+        }
+        if (y+1 <= borders[x+1][1]) {
+            rcoor = rcoor_toString(game, [coords, {x:x+1, y:y+1}]);
+            if (game.board.roads[rcoor].id == null) {
+                free_roads_set.add(rcoor)
+            }
+        }
+    } else {
+        if (y-1 >= borders[x-1][0]) {
+            rcoor = rcoor_toString(game, [coords, {x:x-1, y:y-1}]);
+            if (game.board.roads[rcoor].id == null) {
+                free_roads_set.add(rcoor)
+            }
+        }
+        if (y+1 <= borders[x-1][1]) {
+            rcoor = rcoor_toString(game, [coords, {x:x-1, y:y+1}]);
+            if (game.board.roads[rcoor].id == null) {
+                free_roads_set.add(rcoor)
+            }
+        }
+        if (x+1 < 12) {
+            rcoor = rcoor_toString(game, [coords, {x:x+1, y:y}]);
+            if (game.board.roads[rcoor].id == null) {
+                free_roads_set.add(rcoor)
+            }
+        }
+    }
+    game.players[i].free_roads = [...free_roads_set]
+
+    // Removing the blocked nodes:
+    for (let p = 0; p < 4; p++) {
+        let free_nodes_set = new Set(game.players[p].free_nodes)
+        // A) The selected node from each player:
+        free_nodes_set.delete(ncoor)
+        // B) The colindant nodes from each player:
+        // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
+        if (x % 2 === 0) {
+            if (x-1 > 0) {
+                free_nodes_set.delete(ncoor_toString({x:x-1, y:y}))
+            }
+            if (y-1 >= borders[x+1][0]) {
+                free_nodes_set.delete(ncoor_toString({x:x+1,y:y-1}))
+            }
+            if (y+1 <= borders[x+1][1]) {
+                free_nodes_set.delete(ncoor_toString({x:x+1,y:y+1}))
+            }
+        // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
+        } else {
+            if (y-1 >= borders[x-1][0]) {
+                free_nodes_set.delete(ncoor_toString({x:x-1,y:y-1}))
+            }
+            if (y+1 <= borders[x-1][1]) {
+                free_nodes_set.delete(ncoor_toString({x:x-1,y:y+1}))
+            }
+            if (x+1 < 12) {
+                free_nodes_set.delete(ncoor_toString({x:x+1,y:y}))
+            }
+        }
+        game.players[p].free_nodes = [...free_nodes_set]
+    }
+
+    // Update resources (LATER)
+
+}
+
+/**
+ * Función para construir una carretera. Esta función SOLO SE LLAMA cuando se sabe
+ * de antemano que puede seguir construyendo.
+ * 
+ * @param {*} game      Partida sobre la que transcurre el juego.
+ * @param {*} id        Jugador que ha pedido construir.
+ * @param {[{x:any, y:any}, {x:any, y:any}]} coords    Coordenadas del nodo donde construir.
+ */
+function build_road(game, player_name, rcoor) {
+
+    console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toRcoor(rcoor))
+    let i = game.players.findIndex(curr_player => curr_player.id === player)
+
+}
+
+
+
+
+// ============================================================================
+// CODIGO A LIMPIAR
+// ============================================================================
 
 // Un jugador tiene:
 // - Un id.
@@ -476,6 +620,7 @@ function roll_dices(game) {
     return game
 }
 
+
 /**
  * Función para construir un pueblo. Esta función SOLO SE LLAMA cuando se sabe
  * de antemano que puede seguir construyendo.
@@ -484,7 +629,8 @@ function roll_dices(game) {
  * @param {*} id        Jugador que ha pedido construir.
  * @param {{x:any, y:any}} coords    Coordenadas del nodo donde construir.
  */
-function build_village(game, id, coords) {
+/*
+function build_village2(game, id, coords) {
     let index = game.players.findIndex(player => player.id === id)
     let x = coords.x, y = coords.y, ncoor = ncoor_toString(coords), rcoor = ''
 
@@ -569,6 +715,7 @@ function build_village(game, id, coords) {
         }
     }
 }
+*/
 
 /**
  * Función para construir una ciudad. Esta función SOLO SE LLAMA cuando se sabe
@@ -598,7 +745,8 @@ function build_city(game, id, coords) {
  * @param {*} id        Jugador que ha pedido construir.
  * @param {[{x:any, y:any}, {x:any, y:any}]} coords    Coordenadas del nodo donde construir.
  */
-function build_road(game, id, coords) { //TODO:Añadir posibilidad de contruir
+function build_road2(game, id, coords) { //TODO:Añadir posibilidad de contruir
+
     let index = game.players.findIndex(player => player.id === id)
     let rcoor = rcoor_toString(game, coords)
     game.board.roads[rcoor].id = id
@@ -1048,7 +1196,7 @@ function build_simulation(game) {
 
 // game_simulation()
 module.exports = { 
-    roll_dices, 
+    roll_the_dices, 
     build_village, 
     build_city,
     build_road,
