@@ -21,16 +21,7 @@ const  {
 const MoveType = require( './movesTypes.js')
 let move = {
     id: 0,  
-    coords_0: '',
-    coords_1: '',
-    //coords: {
-    //    x:0,
-    //    y:0,
-    //},
-    //coords2: {
-    //    x:0,
-    //    y:0,
-    //},
+    coords: '',
     resource: 'None',   //Tipo de recurso
     resource2: 'None',  //Tipo de recurso
     hexagon: 0,         //Hexagono donde ponen el ladron
@@ -40,7 +31,7 @@ let move = {
 const CatanModule = {
 
     move (id, move, game){
-        console.log(move.id)
+        //console.log(move.id)
 
         switch(move.id) {
             case MoveType.roll_dices:
@@ -49,8 +40,7 @@ const CatanModule = {
                 break;
 
             case MoveType.build_village:
-                console.log("build_village")
-                build_village(game, id, move.coords_0);
+                build_village(game, id, move.coords);
                 break;
 
             case MoveType.build_city:
@@ -59,12 +49,7 @@ const CatanModule = {
                 break;
             
             case MoveType.build_road:
-                console.log("build_road")
-                //const coordsRoad = [
-                //    {x: move.coords.x, y: move.coords.y},
-                //    {x: move.coords2.x, y: move.coords2.y},
-                //];
-                //build_road( game, id, coordsRoad);
+                build_road(game, id, move.coords)
                 break;
 
             case MoveType.buy_cards:

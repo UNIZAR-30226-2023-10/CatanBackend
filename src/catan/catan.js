@@ -227,14 +227,111 @@ function build_village(game, player, ncoor) {
  * de antemano que puede seguir construyendo.
  * 
  * @param {*} game      Partida sobre la que transcurre el juego.
- * @param {*} id        Jugador que ha pedido construir.
+ * @param {*} player        Jugador que ha pedido construir.
  * @param {[{x:any, y:any}, {x:any, y:any}]} coords    Coordenadas del nodo donde construir.
  */
-function build_road(game, player_name, rcoor) {
+function build_road(game, player, rcoor) {
 
     console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toRcoor(rcoor))
-    let i = game.players.findIndex(curr_player => curr_player.id === player)
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    let coords = string_toRcoor(rcoor)
 
+    // Adding the new road
+    game.board.roads[rcoor].id = player
+    let roads_set = new Set(game.players[i].roads)
+    roads_set.add(rcoor)
+    game.players[i].roads = [...roads_set]
+
+    // Adding the possible new roads
+    // TODO: se puede optimizar, para despues sino.
+    // - Se puede evitar si una arista es ocupada o no ya que el nodo a comprobar es el nodo
+    // de la arista que ya hemos recibido.
+    let free_nodes_set = new Set(game.players[i].free_nodes), free_roads_set = new Set(game.players[i].free_roads)
+    for (let coord of coords) {
+        let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord), free_node = true
+        // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
+        if (x % 2 === 0) {
+            if (x-1 > 0) {
+                let mcoor = {x:x-1, y:y}
+                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
+                    rcoor = rcoor_toString(game, [coord, mcoor]);
+                    if (game.board.roads[rcoor].id == null) {
+                        free_roads_set.add(rcoor)
+                    }
+                }
+                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                    free_node = false
+                }
+            }
+            if (y-1 >= borders[x+1][0]) {
+                let mcoor = {x:x+1, y:y-1}
+                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
+                    rcoor = rcoor_toString(game, [coord, mcoor]);
+                    if (game.board.roads[rcoor].id == null) {
+                        free_roads_set.add(rcoor)
+                    }
+                }
+                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                    free_node = false
+                }
+            }
+            if (y+1 <= borders[x+1][1]) {
+                let mcoor = {x:x+1, y:y+1}
+                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
+                    rcoor = rcoor_toString(game, [coord, mcoor]);
+                    if (game.board.roads[rcoor].id == null) {
+                        free_roads_set.add(rcoor)
+                    }
+                }
+                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                    free_node = false
+                }
+            }
+        // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
+        } else {
+            if (y-1 >= borders[x-1][0]) {
+                let mcoor = {x:x-1, y:y-1}
+                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
+                    rcoor = rcoor_toString(game, [coord, mcoor]);
+                    if (game.board.roads[rcoor].id == null) {
+                        free_roads_set.add(rcoor)
+                    }
+                } 
+                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                    free_node = false
+                }
+            }
+            if (y+1 <= borders[x-1][1]) {
+                let mcoor = {x:x-1, y:y+1}
+                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
+                    rcoor = rcoor_toString(game, [coord, mcoor]);
+                    if (game.board.roads[rcoor].id == null) {
+                        free_roads_set.add(rcoor)
+                    }
+                }
+                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                    free_node = false
+                }
+            }
+            if (x+1 < 12) {
+                let mcoor = {x:x+1, y:y}
+                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
+                    rcoor = rcoor_toString(game, [coord, mcoor]);
+                    if (game.board.roads[rcoor].id == null) {
+                        free_roads_set.add(rcoor)
+                    }
+                }
+                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                    free_node = false
+                }
+            } 
+        }
+        if (free_node) {
+            free_nodes_set.add(ncoor)
+        }
+    }
+    game.players[i].free_nodes = [...free_nodes_set]
+    game.players[i].free_roads = [...free_roads_set]
 }
 
 
@@ -629,7 +726,6 @@ function roll_dices(game) {
  * @param {*} id        Jugador que ha pedido construir.
  * @param {{x:any, y:any}} coords    Coordenadas del nodo donde construir.
  */
-/*
 function build_village2(game, id, coords) {
     let index = game.players.findIndex(player => player.id === id)
     let x = coords.x, y = coords.y, ncoor = ncoor_toString(coords), rcoor = ''
@@ -715,7 +811,6 @@ function build_village2(game, id, coords) {
         }
     }
 }
-*/
 
 /**
  * Función para construir una ciudad. Esta función SOLO SE LLAMA cuando se sabe
