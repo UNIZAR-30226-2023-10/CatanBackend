@@ -47,10 +47,10 @@ const Socket = {
                     //console.log("Partida actual")
                     //console.log(partida.game.current_turn)
                     //console.log("-------------------")
+                    console.log("PARTIDA ACTUAL: ", partida.game)
                     this.sendGame(codigo_partida, partida.game)
                     
                     for (jugador in partida.jugadores ){
-    
                         this.sockets.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, partida.game))
     
                     }
@@ -176,14 +176,16 @@ const Socket = {
     },
     async sendGame(codigo_partida, data){
         this.sockets.to(`${codigo_partida}`).emit('update', data)
-    },
+    }
+    /*,
     async startGame(codigo_partida, players){
         let game = CatanModule.crearPartida(players,codigo_partida)
         this.sockets.to(`${codigo_partida}`).emit('redirectToGame', game)
         this.sendGame(codigo_partida, game)
         console.log('Game: ', game)
         console.log('Board: ', game.board)
-    }     
+    }
+    */     
 }
 
 

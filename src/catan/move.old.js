@@ -1,6 +1,6 @@
 const  { notify }  = require('../routes/auth.routes.js');
 const  { 
-    roll_the_dices, 
+    roll_dices, 
     build_village, 
     build_city,
     build_road,
@@ -31,24 +31,11 @@ let move = {
 const CatanModule = {
 
     move (id, move, game){
+        //console.log(move.id)
 
-        if (move.id === MoveType.build_road) {
-            console.log("Build a road")
-            build_road(game, id, move.coords)
-        } else if (move.id === MoveType.build_village) {
-            console.log("Build a village")
-            build_village(game, id, move.coords)
-        } else if (move.id === MoveType.next_turn) {
-            console.log("Next turn")
-            next_turn(game, id)  
-        } else if (move.id === MoveType.roll_dices) {
-            console.log("Roll the dices")
-            roll_the_dices(game)
-        } 
-        
-        /*switch(move.id) {
+        switch(move.id) {
             case MoveType.roll_dices:
-                roll_the_dices(game);
+                roll_dices(game);
                 break;
 
             case MoveType.build_village:
@@ -95,16 +82,15 @@ const CatanModule = {
                 break;
             
             case MoveType.next_turn:
+                console.log("next_turn")
                 next_turn(game);
                 break;
-
             case MoveType.first_roll:
                 console.log("first_roll")
                 first_roll(game,id); 
             default: 
                 console.log("id incorrecto")
         }
-        */
         return game
     },
 
