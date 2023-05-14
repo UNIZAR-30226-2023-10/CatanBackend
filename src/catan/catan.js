@@ -82,6 +82,7 @@ function create_game(code, players) {
         code: code,       // Hay que discutir muchas cosas sobre esto...
         current_turn : 0, //
         phase: 0,         // Indica el estado de la partida:
+
                           // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego.
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
                           // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
@@ -99,7 +100,7 @@ function create_game(code, players) {
                 'Trigo': 0,
                 'Madera': 0,
                 'Ladrillo': 0,
-                'Piedra': 0,
+                'Piedra':0,
                 'Lana': 0
             },
             growth_cards: {
@@ -112,7 +113,7 @@ function create_game(code, players) {
             // TODO: Yo sacaria este valor fuera de growth_cards
             // Ya esta sacado.
             used_knights: 0,
-            dices_res: []
+            dices_res: [1,1]
         })
     }
     console.log('tablero creado')
@@ -624,6 +625,7 @@ function get_resources(game, res) {
             let villages_arr = [...game.players[i].villages]
             last_built = villages_arr[villages_arr.length-1]
             game.board.nodes[last_built].biomes.forEach((biome) => {
+                console.log('resources',game.players[i].resources)
                 game.players[i].resources[game.board.biomes[biome].resource]++
             })
         }
@@ -647,8 +649,11 @@ function get_resources(game, res) {
     }
 }
 
-function dices() {
-    return random(1,6) + random(1,6)
+function dices(game) {
+    game.players[game.current_turn].dices_res[0] = random(1,6)
+    game.players[game.current_turn].dices_res[1]  = random(1,6)
+    console.log('game.players[game.current_turn].dices_res',game.players[game.current_turn].dices_res)
+    return game.players[game.current_turn].dices_res[0] + game.players[game.current_turn].dices_res[1]
 }
 
 //TODO : Completar
@@ -696,7 +701,8 @@ function getMoves(id, game){
  * @param {*} id    Jugador que ha decidido tirar los dados.
  */
 function roll_dices(game) {
-    game.last_roll  = dices()
+    console.log('roll dices')
+    game.last_roll  = dices(game)
     if (game.last_roll !== 7) {
         get_resources(game, game.last_roll)
     } else {
@@ -733,7 +739,7 @@ function build_village2(game, id, coords) {
     game.board.nodes[ncoor].building = { player: id, type: 'Village' }
     game.players[index].villages.add(ncoor)
     // COSTO: Trigo=1, Madera=1, Ladrillo=1, Lana=1
-    if (game.phase === 3) {
+    if (game.phase === 2) {
         game.players[index].resources['Trigo']--
         game.players[index].resources['Madera']--
         game.players[index].resources['Ladrillo']--
@@ -847,7 +853,7 @@ function build_road2(game, id, coords) { //TODO:Añadir posibilidad de contruir
     game.board.roads[rcoor].id = id
     game.players[index].roads.add(rcoor)
     // COSTO: Madera=1, Ladrillo=1
-    if (game.phase === 3) {
+    if (game.phase === 2) {
         game.players[index].resources['Madera']--
         game.players[index].resources['Ladrillo']--
     }
@@ -1066,18 +1072,20 @@ function next_turn(game) {
             game.current_turn--
         } else {
             console.log("=========================== DE FASE 2 a FASE 3 ===========================")
-            game.players.forEach((player) => {
+            /*game.players.forEach((player) => {
                 player.free_nodes = new Set()
-            })
+            })*/
             get_resources(game, 0)
             console.log(game.players)
             game.phase = 2
         }
     } else {
-        if(win_check){
+        if(win_check(game, game.players[game.current_turn].id)){
             console.log(`The winner is player ${game.players[current_turn].id}`)
         }else{
+            console.log('current',game.current_turn)
             game.current_turn = (game.current_turn+1)%(game.players.length)
+            console.log('current',game.current_turn)
         }
     }
     return game
@@ -1085,7 +1093,12 @@ function next_turn(game) {
 
 function win_check(game, id){//faltan los puntos por objetos
     let index = game.players.findIndex(player => player.id === id)
-    let puntos = game.players[index].villages.size + 2*(game.players[index].cities.size)+ game.players[index].growth_cards.Puntos
+    console.log(game.players[index].villages)
+    console.log(game.players[index].cities)
+    console.log(game.players[index].growth_cards.Puntos)
+    let puntos = game.players[index].villages.length + 2*(game.players[index].cities.length)+ game.players[index].growth_cards.Puntos
+    console.log('puntos: ',puntos)
+    console.log(game)
     knights_points(game,id)
     if(id==game.board.player_max_knights){
         puntos += 2
@@ -1291,7 +1304,7 @@ function build_simulation(game) {
 
 // game_simulation()
 module.exports = { 
-    roll_the_dices, 
+    roll_dices, 
     build_village, 
     build_city,
     build_road,

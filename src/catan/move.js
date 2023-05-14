@@ -1,6 +1,6 @@
 const  { notify }  = require('../routes/auth.routes.js');
 const  { 
-    roll_the_dices, 
+    roll_dices, 
     build_village, 
     build_city,
     build_road,
@@ -35,8 +35,7 @@ const CatanModule = {
 
         switch(move.id) {
             case MoveType.roll_dices:
-                roll_the_dices(game);
-                console.log("Roll dices: ", game.dices_res)
+                roll_dices(game);
                 break;
 
             case MoveType.build_village:
