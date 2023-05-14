@@ -6,7 +6,7 @@ const MoveType = {
     buy_cards: 5,
     monopoly: 6,
     discovery: 7,
-    knight: 8,
+    use_knight: 8,
     order_selection: 9,
     change_recourse: 10,
     next_turn: 11

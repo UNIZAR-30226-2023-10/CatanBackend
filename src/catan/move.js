@@ -8,26 +8,26 @@ const  {
     buy_cards,
     next_turn,
     roll_the_dices,
+    use_knight,
 
     // De momento estos no estan limpiados:
     monopoly,
     discovery,
-    knight,
     change_recourse,
     start_game,
     getMoves,
     barajar_desarrollos
 
-} = require( './catan.js');
+} = require('./catan.js');
 
 const MoveType = require( './movesTypes.js')
 let move = {
-    id: 0,  
-    coords: '',
+    id: 0,            // Tipo de movimiento
+    coords: '',       // Coordenadas de construccion, valido para todos.
+    robber_biome: -1, // Siguiente bioma del ladron (si hay).
+    // Sin limpiar
     resource: 'None',   //Tipo de recurso
     resource2: 'None',  //Tipo de recurso
-    hexagon: 0,         //Hexagono donde ponen el ladron
-    idPlayer: 0       //Id del jugador que quiere robar
 }
 
 const CatanModule = {
@@ -51,6 +51,9 @@ const CatanModule = {
         } else if (move.id === MoveType.roll_dices) {
             console.log("Roll the dices")
             roll_the_dices(game)
+        } else if (move.id === MoveType.use_knight) {
+            console.log("Using the knight")
+            use_knight(game, player, move.robber_biome)
         }
         
         /*switch(move.id) {

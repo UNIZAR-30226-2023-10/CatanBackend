@@ -222,7 +222,7 @@ function create_board() {
     }
     return {
         biomes: shuffle(shuffled_biomes),
-        thief_biome: -1,
+        robber_biome: -1,
         nodes: nodes,
         roads: edges,
         //buildings: new Set(),
@@ -769,7 +769,36 @@ function update_actions_with_cost(game) {
 // ============================================================================
 // SIGUIENTES FUNCIONES A LIMPIAR
 // ============================================================================
+function use_knight(game, player, robber_biome) {
 
+    let i = game.players.findIndex(curr_player => curr_player.name === player) 
+
+
+    let index = game.players.findIndex(player => player.id === id)
+    game.players[index].develop_cards.Caballeros--
+    game.players[index].develop_cards.Caballeros_usados++
+    game.board.thief_biome=hexagon
+    let index2 = game.players.findIndex(player => player.id === idPlayer)
+
+    let randomNumber = Math.floor(Math.random() * total_resources(idPlayer));
+
+    if(randomNumber < game.players[index2].resources['Grano']){//Coloca caballero
+        game.players[index2].resources['Grano']--;
+        game.players[index].resources['Grano']++;
+    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera'])){//Coloca Carreteras
+        game.players[index2].resources['Madera']--;
+        game.players[index].resources['Madera']++;
+    }else if(randomNumber <  (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo'])){//Coloca Monopolio
+        game.players[index2].resources['Ladrillo']--;
+        game.players[index].resources['Ladrillo']++;
+    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo']+game.players[index2].resources['Piedra'])){//Coloca Descubrimiento
+        game.players[index2].resources['Piedra']--;
+        game.players[index].resources['Piedra']++;
+    }else { 
+        game.players[index2].resources['Lana']--;
+        game.players[index].resources['Lana']++;
+    }
+}
 
 // ============================================================================
 // CODIGO A LIMPIAR
@@ -851,43 +880,11 @@ function discovery (game, id, resource, resource2) {
     game.players[index].resources[resource2]++
 }
 
-function knight(game, id, hexagon, idPlayer) {
-    let index = game.players.findIndex(player => player.id === id)
-    game.players[index].develop_cards.Caballeros--
-    game.players[index].develop_cards.Caballeros_usados++
-    game.board.thief_biome=hexagon
-    let index2 = game.players.findIndex(player => player.id === idPlayer)
-
-    let randomNumber = Math.floor(Math.random() * total_resources(idPlayer));
-
-    if(randomNumber < game.players[index2].resources['Grano']){//Coloca caballero
-        game.players[index2].resources['Grano']--;
-        game.players[index].resources['Grano']++;
-    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera'])){//Coloca Carreteras
-        game.players[index2].resources['Madera']--;
-        game.players[index].resources['Madera']++;
-    }else if(randomNumber <  (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo'])){//Coloca Monopolio
-        game.players[index2].resources['Ladrillo']--;
-        game.players[index].resources['Ladrillo']++;
-    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo']+game.players[index2].resources['Piedra'])){//Coloca Descubrimiento
-        game.players[index2].resources['Piedra']--;
-        game.players[index].resources['Piedra']++;
-    }else { 
-        game.players[index2].resources['Lana']--;
-        game.players[index].resources['Lana']++;
-    }
-}
-
 function change_recourse (game, id, resource, resource2) {  //resource -> recurso que quiero ||resource2 -> recurso por el que cambio
     let index = game.players.findIndex(player => player.id === id)
     game.players[index].resources[resource2] -= 4          //En el frontend solo deben dar opciones de cambio si tiene 4 o mas del recurso que cambia
     game.players[index].resources[resource]++
 }
-
-const rl = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 
 function win_check(game, id){//faltan los puntos por objetos
     let index = game.players.findIndex(player => player.id === id)
@@ -974,11 +971,11 @@ module.exports = {
     buy_cards,
     next_turn,
     roll_the_dices,
+    use_knight,
 
     // De momento estos no estan limpiados:
     monopoly,
     discovery,
-    knight,
     change_recourse,
     start_game,
     getMoves,
