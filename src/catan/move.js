@@ -1,20 +1,23 @@
 const  { notify }  = require('../routes/auth.routes.js');
 const  { 
-    roll_the_dices, 
-    build_village, 
-    build_city,
+    // De momento estos estan limpiados:
+    create_game,
     build_road,
+    build_village,
+    next_turn,
+    roll_the_dices,
+
+    // De momento estos no estan limpiados:
+    build_city,
     buy_cards,
     monopoly,
     discovery,
     knight,
     change_recourse,
-    create_game,
     start_game,
     create_player,
     getMoves,
-    next_turn,
-    first_roll
+    barajar_desarrollos
 
 } = require( './catan.js');
 

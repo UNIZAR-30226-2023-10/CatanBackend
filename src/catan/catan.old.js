@@ -690,6 +690,7 @@ function getMoves(id, game){
 
     }
 }
+
 /**
  * Funcion para tirar los dados:
  *  1. El jugador ha de decidir tirar los datos (pulsar el boton).

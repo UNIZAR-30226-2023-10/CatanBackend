@@ -1,7 +1,6 @@
 //=============================================================================
 // FUNCIONES AUXILIARES 
 //=============================================================================
-const MoveType = require("./movesTypes")
 
 function random(min, max) {
     return Math.floor(Math.random() * max) + min;
@@ -263,6 +262,7 @@ function create_game(code, players) {
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
                           // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
                           // - (3). Resto de rondas.
+        dices_res: [0,0]
     }
     for (let i = 0; i < players.length; i++) {
         game.players.push({
@@ -280,6 +280,7 @@ function create_game(code, players) {
                 'Piedra': 0,
                 'Lana': 0
             },
+            can_build: [ false, false, false ],
             growth_cards: {
                 'Caballeros': 0,
                 'Carreteras': 0,
@@ -290,7 +291,6 @@ function create_game(code, players) {
             // TODO: Yo sacaria este valor fuera de growth_cards
             // Ya esta sacado.
             used_knights: 0,
-            dices_res: []
         })
     }
     console.log('Tablero creado')
@@ -310,6 +310,16 @@ function build_village(game, player, ncoor) {
     //console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toNcoor(ncoor))
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     let coords = string_toNcoor(ncoor), x = coords.x, y = coords.y, rcoor = ''
+
+    // Taking the needed resources:
+    // - Trigo: 1, Madera: 1, Ladrillo: 1, Lana: 1
+    if (game.phase === 3) {
+        game.players[i].resources['Trigo']--
+        game.players[i].resources['Madera']--
+        game.players[i].resources['Ladrillo']--
+        game.players[i].resources['Lana']--
+        update_buildable_buildings(game)
+    }
 
     // Adding the new village:
     let villages_set = new Set(game.players[i].villages)
@@ -410,9 +420,6 @@ function build_village(game, player, ncoor) {
         }
         game.players[p].free_nodes = [...free_nodes_set]
     }
-
-    // Update resources (LATER)
-
 }
 
 /**
@@ -426,31 +433,40 @@ function build_village(game, player, ncoor) {
 function build_road(game, player, rcoor) {
 
     //console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toRcoor(rcoor))
-
-    console.log("NODES: ", game.board.nodes)
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     let coords = string_toRcoor(rcoor)
+
+    // Taking the needed resources:
+    // - Madera: 1, Ladrillo: 1
+    if (game.phase === 3) {
+        game.players[i].resources['Madera']--
+        game.players[i].resources['Ladrillo']--
+        update_buildable_buildings(game)
+    }
 
     // Adding the new road
     game.board.roads[rcoor].id = player
     let roads_set = new Set(game.players[i].roads)
     roads_set.add(rcoor)
     game.players[i].roads = [...roads_set]
+    // Deleting the road from the available roads
+    for (let p of game.players) {
+        let free_roads_set = new Set(p.free_roads)
+        free_roads_set.delete(rcoor)
+        p.free_roads = [...free_roads_set]
+    }
 
     // Adding the possible new roads
     // TODO: se puede optimizar, para despues sino.
     // - Se puede evitar si una arista es ocupada o no ya que el nodo a comprobar es el nodo
     // de la arista que ya hemos recibido.
     let free_nodes_set = new Set(game.players[i].free_nodes), free_roads_set = new Set(game.players[i].free_roads)
-    free_roads_set.delete(rcoor)
     for (let coord of coords) {
-        console.log("COORD: ", coord)
         let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord), free_node = true
         // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
         if (x % 2 === 0) {
             if (x-1 > 0) {
                 let mcoor = {x:x-1, y:y}
-                console.log("X-1, Y: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
@@ -463,7 +479,6 @@ function build_road(game, player, rcoor) {
             }
             if (y-1 >= borders[x+1][0]) {
                 let mcoor = {x:x+1, y:y-1}
-                console.log("X+1, Y-1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
@@ -476,7 +491,6 @@ function build_road(game, player, rcoor) {
             }
             if (y+1 <= borders[x+1][1]) {
                 let mcoor = {x:x+1, y:y+1}
-                console.log("X+1, Y+1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
@@ -491,7 +505,6 @@ function build_road(game, player, rcoor) {
         } else {
             if (y-1 >= borders[x-1][0]) {
                 let mcoor = {x:x-1, y:y-1}
-                console.log("X-1, Y-1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
@@ -504,7 +517,6 @@ function build_road(game, player, rcoor) {
             }
             if (y+1 <= borders[x-1][1]) {
                 let mcoor = {x:x-1, y:y+1}
-                console.log("X-1, Y+1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
@@ -517,7 +529,6 @@ function build_road(game, player, rcoor) {
             }
             if (x+1 < 12) {
                 let mcoor = {x:x+1, y:y}
-                console.log("X+1, Y: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
@@ -537,36 +548,22 @@ function build_road(game, player, rcoor) {
     game.players[i].free_roads = [...free_roads_set]
 }
 
-function get_resources(game, res) {
-    for (let i = 0; i < game.players.length; i++){
-        for (let building of game.players[i].villages) {
-            game.board.nodes[building].biomes.forEach((biome) => {
-                if (game.board.biomes[biome].token === res) {
-                    game.players[i].resources[game.board.biomes[biome].resource]++
-                }
-            });
-        }
-        for (let building of game.players[i].cities) {
-            game.board.nodes[building].biomes.forEach((biome) => {
-                if (game.board.biomes[biome].token === res) {
-                    game.players[i].resources[game.board.biomes[biome].resource] += 2
-                }
-            })
-        }
-    }
-}
-
+/**
+ * Funcion para cambiar de turno.
+ */
 function next_turn(game, player) {
-    console.log("PHASE: ", game.phase, ", CURRENT TURN: ", game.current_turn)
+    // console.log("PHASE: ", game.phase, ", CURRENT TURN: ", game.current_turn)
     if (player === game.players[game.current_turn].name) {
+        //Primera ronda, solo de construccion
         if (game.phase === 1) {
             if (game.current_turn !== game.players.length-1) {
                 game.current_turn++
             } else {
                 console.log("=========================== DE FASE 1 a FASE 2 ===========================")
-                // Change to the second phase (this phase doesn't ocurr anything)
+                // Change to the second phase (in this phase doesn't ocurr anything)
                 game.phase = 2
             }
+        //Segunda ronda, solo contruccion. Recibe recursos por la contruccion de este ultimo poblado
         } else if (game.phase === 2) {
             if (game.current_turn !== 0) {
                 game.current_turn--
@@ -587,22 +584,83 @@ function next_turn(game, player) {
                 game.phase = 3
             }
         } else {
-            if(win_check){
-                console.log(`The winner is player ${game.players[game.current_turn].id}`)
-            }else{
+            //if(win_check){
+            //    console.log(`The winner is player ${game.players[game.current_turn].id}`)
+            //}else{
                 game.current_turn = (game.current_turn+1)%(game.players.length)
-            }
+            //}
         }
     }
 }
 
+function update_buildable_buildings(game) {
+    for (let p of game.players) {
+        // Village
+        if (p.resources['Trigo'] > 0 && p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0 && p.resources['Lana']) {
+            p.can_build[0] = true
+        } else {
+            p.can_build[0] = false
+        }
+        // City
 
+        // Road
+        if (p.resources['Madera'] > 0 && p.resources['Ladrillo']) {
+            p.can_build[2] = true
+        } else {
+            p.can_build[2] = false
+        }
+    }
+}
 
 /**
+ * Funcion para tirar los dados:
+ *  1. El jugador ha de decidir tirar los datos (pulsar el boton).
+ *  2. Se tiran los dados:
+ *      a. Si sale distinto de 7, obtiene materiales de sus biomas.
+ *      b. Si sale igual a 7, todo jugador con más de 7 cartas pierde la mitad.
  * 
+ * @param {*} game  Partida sobre la que se juega.
+ * @param {*} id    Jugador que ha decidido tirar los dados.
  */
 function roll_the_dices(game) {
+
     game.dices_res = [random(1,6), random(1,6)]
+    let res = game.dices_res[0] + game.dices_res[1]
+    if (res !== 7) {
+        for (let p of game.players) {
+            for (let v of p.villages) {
+                game.board.nodes[v].biomes.forEach((biome) => {
+                    if (game.board.biomes[biome].token === res) {
+                        p.resources[game.board.biomes[biome].resource]++
+                    }
+                })
+            }
+            for (let c of p.cities) {
+                game.board.nodes[c].biomes.forEach((biome) => {
+                    if (game.board.biomes[biome].token === res) {
+                        p.resources[game.board.biomes[biome].resource] += 2
+                    }
+                })
+            }
+        }
+    } else {
+        for (let p of game.players) {
+            let resources = Object.values(p.resources).reduce((total, num) => {
+                return total + num;
+            }, 0);
+            if (resources > 7) {
+                let nresources = Object.keys(p.resources).length
+                for (let i = total/2; i > 0; i++) {
+                    let kill_resource = biome_resources[random(0, nresources)]
+                    while (p.resources[kill_resource] == 0) {
+                        kill_resource = biome_resources[random(0, nresources)]
+                    }
+                    p.resources[kill_resource]--
+                }
+            }
+        }
+    }
+    update_buildable_buildings(game)
 }
 
 
@@ -644,73 +702,6 @@ function create_player(id) {
     }
 }
 
-function first_roll(game,idPalyer){
-    let index = game.players.findIndex(player => player.id === idPalyer)
-    game.players[index].first_roll[0]=random(1,6)
-    game.players[index].first_roll[1]=random(1,6)
-}
-
-
-// ============================================================================
-// SIN LIMPIAR
-// ============================================================================
-// Primer turno:
-/*
-function next_turn(game, id, phase) {
-    let index = game.players.findIndex(player => player.id === id)  
-    if (phase === 0) {                                                                  //Primera ronda, solo de construccion
-        // Primera ronda
-        build_village(game, id,coords, phase);                                          //Construye el primer poblado
-        build_road(game,id,coords);                                                     //Construye la primera carretera
-        if(index==3){                                                                   //Pasa a la segunda ronda
-            next_turn(game,id,1);
-        }else{                                                                          //Pasa el turno para la primera ronda                                   
-            next_turn(game,jugadores[id+1],0);
-        }
-    } else if (phase === 1) {                                                           //Segunda ronda, solo contruccion. Recibe recursos por la contruccion del poblado
-        // Segunda ronda
-        build_village(game, id,coords, phase);                                          //Construye el segundo poblado
-        build_road(game,id,coords);                                                     //Construye la segunda carretera
-        for(let i = 0; i < nodes[coords].biomes.length; i++){                           
-            game.players[index].resources[biome_resources[nodes[coords].biomes[i]]]++   //Roba materia prima
-        }
-        if(index==0){                                                                   //Pasa al turno normal    
-            next_turn(game,id,2);
-        }else{                                                                          //Pasa el turno para la segunda ronda
-            next_turn(game,jugadores[id-1],0);                                          
-        }
-    } else {                                                                            //TODO: Primera version sin opciones de usar antes caballero???
-        if(index==3){                                                                   //TODO: Comprobar si hay ganador al finalizar el turno???
-            next_turn(game,jugadores[0],2)
-        }else{
-            next_turn(game,jugadores[index+1],2) 
-        }
-        
-        // Resto de la partida igual
-    }
-}
-*/
-
-
-ids   = ["Jkilo90o", "XXXZ89xx", "45TRej23", "5ty62sw1"]
-/**
- * Función auxiliar. Calcula el número de cartas totales del jugador.
- * 
- * @param {*} player    Estructura jugador recibida.
- * @returns 
- */
-function total_resources(player) { //TODO:Player no deberia ser el id?? No, es una funcion privada.
-    let total = 0
-    for (let resource of Object.values(player.resources)) {
-        total += resource
-    }
-    return total
-}
-
-function dices() {
-    return random(1,6) + random(1,6)
-}
-
 //TODO : Completar
 function getMoves(id, game){
 
@@ -745,133 +736,8 @@ function getMoves(id, game){
 
     }
 }
-/**
- * Funcion para tirar los dados:
- *  1. El jugador ha de decidir tirar los datos (pulsar el boton).
- *  2. Se tiran los dados:
- *      a. Si sale distinto de 7, obtiene materiales de sus biomas.
- *      b. Si sale igual a 7, todo jugador con más de 7 cartas pierde la mitad.
- * 
- * @param {*} game  Partida sobre la que se juega.
- * @param {*} id    Jugador que ha decidido tirar los dados.
- */
-function roll_dices(game) {
-    game.last_roll  = dices()
-    if (game.last_roll !== 7) {
-        get_resources(game, game.last_roll)
-    } else {
-        for (let i = 0; i < 4; i++) {
-            total = total_resources(game.players[i]);
-            if (total > 7) {
-                for (let j = 0; j < total/2; j++) {
-                    let resources = Object.keys(game.players[i].resources)
-                    let kill_resource = biome_resources[random(0, resources.length)]
-                    while (game.players[i].resources[kill_resource] == 0) {
-                        kill_resource = biome_resources[random(0, resources.length)]
-                    }
-                    game.players[i].resources[kill_resource]--
-                }
-            }
-        }
-    }
-    return game
-}
 
-
-/**
- * Función para construir un pueblo. Esta función SOLO SE LLAMA cuando se sabe
- * de antemano que puede seguir construyendo.
- * 
- * @param {*} game      Partida sobre la que transcurre el juego.
- * @param {*} id        Jugador que ha pedido construir.
- * @param {{x:any, y:any}} coords    Coordenadas del nodo donde construir.
- */
-function build_village2(game, id, coords) {
-    let index = game.players.findIndex(player => player.id === id)
-    let x = coords.x, y = coords.y, ncoor = ncoor_toString(coords), rcoor = ''
-
-    game.board.nodes[ncoor].building = { player: id, type: 'Village' }
-    game.players[index].villages.add(ncoor)
-    // COSTO: Trigo=1, Madera=1, Ladrillo=1, Lana=1
-    if (game.phase === 3) {
-        game.players[index].resources['Trigo']--
-        game.players[index].resources['Madera']--
-        game.players[index].resources['Ladrillo']--
-        game.players[index].resources['Lana']--
-    }
-    // Adding new roads:
-    if (x % 2 === 0) {  //TODO: Carretera ya creada- Hecho
-        if (x-1 > 0) {
-            rcoor = rcoor_toString(game, [coords, {x:x-1, y:y}]);
-            if (game.board.roads[rcoor].id == null) {
-                game.players[index].free_roads.add(rcoor)
-            }
-        }
-        if (y-1 >= borders[x+1][0]) {
-            rcoor = rcoor_toString(game, [coords, {x:x+1, y:y-1}]);
-            if (game.board.roads[rcoor].id == null) {
-                game.players[index].free_roads.add(rcoor)
-            }
-        }
-        if (y+1 <= borders[x+1][1]) {
-            rcoor = rcoor_toString(game, [coords, {x:x+1, y:y+1}]);
-            if (game.board.roads[rcoor].id == null) {
-                game.players[index].free_roads.add(rcoor)
-            }
-        }
-    // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
-    } else {
-        if (y-1 >= borders[x-1][0]) {
-            rcoor = rcoor_toString(game, [coords, {x:x-1, y:y-1}]);
-            if (game.board.roads[rcoor].id == null) {
-                game.players[index].free_roads.add(rcoor)
-            }
-        }
-        if (y+1 <= borders[x-1][1]) {
-            rcoor = rcoor_toString(game, [coords, {x:x-1, y:y+1}]);
-            if (game.board.roads[rcoor].id == null) {
-                game.players[index].free_roads.add(rcoor)
-            }
-        }
-        if (x+1 < 12) {
-            rcoor = rcoor_toString(game, [coords, {x:x+1, y:y}]);
-            if (game.board.roads[rcoor].id == null) {
-                game.players[index].free_roads.add(rcoor)
-            }
-        }
-    }
-
-    // Deleting blocked nodes:
-    for (let i = 0; i < 4; i++) {
-        // a) The selected node from each player:
-        game.players[i].free_nodes.delete(ncoor)
-        // b) The colindant nodes from each player:
-        // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
-        if (x % 2 === 0) {
-            if (x-1 > 0) {
-                game.players[i].free_nodes.delete(ncoor_toString({x:x-1, y:y}))
-            }
-            if (y-1 >= borders[x+1][0]) {
-                game.players[i].free_nodes.delete(ncoor_toString({x:x+1,y:y-1}))
-            }
-            if (y+1 <= borders[x+1][1]) {
-                game.players[i].free_nodes.delete(ncoor_toString({x:x+1,y:y+1}))
-            }
-        // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
-        } else {
-            if (y-1 >= borders[x-1][0]) {
-                game.players[i].free_nodes.delete(ncoor_toString({x:x-1,y:y-1}))
-            }
-            if (y+1 <= borders[x-1][1]) {
-                game.players[i].free_nodes.delete(ncoor_toString({x:x-1,y:y+1}))
-            }
-            if (x+1 < 12) {
-                game.players[i].free_nodes.delete(ncoor_toString({x:x+1,y:y}))
-            }
-        }
-    }
-}
-
+ids   = ["Jkilo90o", "XXXZ89xx", "45TRej23", "5ty62sw1"]
 /**
  * Función para construir una ciudad. Esta función SOLO SE LLAMA cuando se sabe
  * de antemano que puede seguir construyendo.
@@ -890,120 +756,6 @@ function build_city(game, id, coords) {
     game.players[index].villages.delete(ncoor)
     game.players[index].resources['Trigo']  -= 2
     game.players[index].resources['Piedra'] -= 3
-}
-
-/**
- * Función para construir una carretera. Esta función SOLO SE LLAMA cuando se sabe
- * de antemano que puede seguir construyendo.
- * 
- * @param {*} game      Partida sobre la que transcurre el juego.
- * @param {*} id        Jugador que ha pedido construir.
- * @param {[{x:any, y:any}, {x:any, y:any}]} coords    Coordenadas del nodo donde construir.
- */
-function build_road2(game, id, coords) { //TODO:Añadir posibilidad de contruir
-
-    let index = game.players.findIndex(player => player.id === id)
-    let rcoor = rcoor_toString(game, coords)
-    game.board.roads[rcoor].id = id
-    game.players[index].roads.add(rcoor)
-    // COSTO: Madera=1, Ladrillo=1
-    if (game.phase === 3) {
-        game.players[index].resources['Madera']--
-        game.players[index].resources['Ladrillo']--
-    }
-    for (let i = 0; i < 4; i++) {
-        game.players[i].free_roads.delete(rcoor)
-    }
-
-    // Add possible new roads.
-    // TODO: se puede optimizar, para despues sino.
-    // - Se puede evitar si una arista es ocupada o no ya que el nodo a comprobar es el nodo
-    // de la arista que ya hemos recibido.
-    // - Se puede evitar la comprobacion de si es par o no, se puede hacer que si o si
-    // el primero sea par y el segundo sea impar.
-    for (let coord of coords) {
-        let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord), free_node = true
-        // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
-        if (x % 2 === 0) {
-            if (x-1 > 0) {
-                let mcoor = {x:x-1, y:y}
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
-                    rcoor = rcoor_toString(game, [coord, mcoor]);
-                    if (game.board.roads[rcoor].id == null) {
-                        game.players[index].free_roads.add(rcoor)
-                    }
-                }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
-                    free_node = false
-                }
-            }
-            if (y-1 >= borders[x+1][0]) {
-                let mcoor = {x:x+1, y:y-1}
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
-                    rcoor = rcoor_toString(game, [coord, mcoor]);
-                    if (game.board.roads[rcoor].id == null) {
-                        game.players[index].free_roads.add(rcoor)
-                    }
-                }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
-                    free_node = false
-                }
-            }
-            if (y+1 <= borders[x+1][1]) {
-                let mcoor = {x:x+1, y:y+1}
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
-                    rcoor = rcoor_toString(game, [coord, mcoor]);
-                    if (game.board.roads[rcoor].id == null) {
-                        game.players[index].free_roads.add(rcoor)
-                    }
-                }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
-                    free_node = false
-                }
-            }
-        // Para x = impar (2n+1). (x,y) -> (x-1,y-1),(x-1,y+1),(x+1,y):
-        } else {
-            if (y-1 >= borders[x-1][0]) {
-                let mcoor = {x:x-1, y:y-1}
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
-                    rcoor = rcoor_toString(game, [coord, mcoor]);
-                    if (game.board.roads[rcoor].id == null) {
-                        game.players[index].free_roads.add(rcoor)
-                    }
-                } 
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
-                    free_node = false
-                }
-            }
-            if (y+1 <= borders[x-1][1]) {
-                let mcoor = {x:x-1, y:y+1}
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
-                    rcoor = rcoor_toString(game, [coord, mcoor]);
-                    if (game.board.roads[rcoor].id == null) {
-                        game.players[index].free_roads.add(rcoor)
-                    }
-                }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
-                    free_node = false
-                }
-            }
-            if (x+1 < 12) {
-                let mcoor = {x:x+1, y:y}
-                if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === id) {
-                    rcoor = rcoor_toString(game, [coord, mcoor]);
-                    if (game.board.roads[rcoor].id == null) {
-                        game.players[index].free_roads.add(rcoor)
-                    }
-                }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
-                    free_node = false
-                }
-            } 
-        }
-        if (free_node) {
-            game.players[index].free_nodes.add(ncoor)
-        }
-    }
 }
 
 /**
@@ -1320,21 +1072,23 @@ function build_simulation(game) {
 }
 
 // game_simulation()
-module.exports = { 
-    roll_the_dices, 
-    build_village, 
-    build_city,
+module.exports = {
+    // De momento estos estan limpiados:
+    create_game,
     build_road,
+    build_village,
+    next_turn,
+    roll_the_dices,
+
+    // De momento estos no estan limpiados:
+    build_city,
     buy_cards,
     monopoly,
     discovery,
     knight,
     change_recourse,
-    create_game,
     start_game,
     create_player,
     getMoves,
-    next_turn,
-    first_roll,
     barajar_desarrollos
 }
