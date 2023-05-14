@@ -767,7 +767,7 @@ function build_city(game, id, coords) {
  */
 function buy_cards(game, id) {
     let index = game.players.findIndex(player => player.id === id)
-    let card = game.board.growth_cards.shift();   //Sacamos la primera carta del vector
+    let card = game.board.cartasDesarrollo.shift();   //Sacamos la primera carta del vector
     game.players[index].resources['Grano']--
     game.players[index].resources['Piedra']--
     game.players[index].resources['Lana']--

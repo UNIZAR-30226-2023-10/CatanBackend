@@ -47,6 +47,9 @@ const CatanModule = {
         } else if (move.id === MoveType.roll_dices) {
             console.log("Roll the dices")
             roll_the_dices(game)
+        }else if (move.id === MoveType.buy_cards){
+            console.log("Buy cards")
+            buy_cards( game,id);
         } 
         
         /*switch(move.id) {
