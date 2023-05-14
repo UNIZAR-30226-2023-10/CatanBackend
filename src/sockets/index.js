@@ -23,8 +23,7 @@ const Socket = {
                     let partida = await GamesModel.findOne({
                         codigo_partida: codigo_partida
                     })
-    
-    
+
                     if (!partida.jugadores.includes(decoded.id)){
                         this.sockets.to(`${decoded.id}_${codigo_partida}`).emit('error', 'you aren\'t a player of this game')
                         return
@@ -38,7 +37,7 @@ const Socket = {
                     //console.log("Partida previa")
                     //console.log(partida.game.current_turn, partida._id)
                     //console.log("-------------------")
-                    let game = CatanModule.move((await UserModel.findById(decoded.id)).username, move, partida.game)
+                    let game = CatanModule.move(move, partida.game, (await UserModel.findById(decoded.id)).username)
                     partida = await GamesModel.findOneAndUpdate(
                         { codigo_partida: codigo_partida },
                         { game: game },
@@ -50,10 +49,9 @@ const Socket = {
                     //console.log("PARTIDA ACTUAL: ", partida.game)
                     this.sendGame(codigo_partida, partida.game)
                     
-                    for (jugador in partida.jugadores ){
-                        this.sockets.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, partida.game))
-    
-                    }
+                    //for (jugador in partida.jugadores ){
+                    //    this.sockets.in(`${jugador}_${codigo_partida}`).emit("notify", CatanModule.findMoves(jugador, partida.game))
+                    //}
                 }
             })
         }

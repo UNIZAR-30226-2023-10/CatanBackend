@@ -8,14 +8,6 @@ function random(min, max) {
     return Math.floor(Math.random() * max) + min;
 }
 
-function shuffle(arr) {
-    let shuffled = arr
-        .map(value => ({ value, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value)
-    return shuffled
-}
-
 function sum(array, end) {
     let res = 0
     for (let i = 0; i < end; i++) {
@@ -91,6 +83,7 @@ const borders = [[3,7],[2,8],[2,8],[1,9],[1,9],[0,10],[0,10],[1,9],[1,9],[2,8],[
 //     - Una baraja con cartas de desarrollo
 function create_board() {
 
+    console.log("BEFORE CREATE BOARD")
     // Generar biomas:
     let new_biomes  = [...biomesQuant], shuffled_biomes = []
     let tokens_start = biomesTokenStarts[random(0, biomesTokenStarts.length)], offset = 0
@@ -221,23 +214,15 @@ function create_board() {
         }
     }
     return {
-        biomes: shuffle(shuffled_biomes),
+        biomes: shuffled_biomes,
         thief_biome: -1,
         nodes: nodes,
         roads: edges,
-        //buildings: new Set(),
-        //growth_cards: {
-        //    Caballero : 14,
-        //    Carreteras : 2,
-        //    Monopolio  : 2,
-        //    Descubrimiento : 2,
-        //    Punto: 5
-        //},
-        //cartasDesarrollo: [],
-        //max_knights: 2,
-        //player_max_knights: -1,
-        //max_roads: 4,
-        //player_max_roads: -1,
+        buildings: new Set(),
+        max_knights: 2,
+        player_max_knights: -1,
+        max_roads: 4,
+        player_max_roads: -1,
     }
 }
 
@@ -283,10 +268,9 @@ function create_development_deck() {
 // - Codigo.
 // - Turno actual de partida.
 // - Si esta comenzada o no (phase)
-function create_game(code, players) { 
+function create_game(players) { 
 
     let game    = {
-        code: code,       // Codigo de la partida
         players: [],      // Jugadores de la partida
         current_turn : 0, // Que jugador esta jugando ahora
         board: create_board(),
@@ -295,7 +279,7 @@ function create_game(code, players) {
                           // Baraja de cartas de desarrollo
         dices_res: [0,0], // Tirada del turno actual
         phase: 1,         // Indica el estado de la partida:
-                          // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego (sin implementar).
+                          // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego (No implementado, se hara? No se sabe)
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
                           // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
                           // - (3). Resto de rondas.
@@ -324,7 +308,8 @@ function create_game(code, players) {
                 'Descubrimientos': 0,
                 'Puntos': 0
             },
-            can_buy: false,
+            // TODO: Yo sacaria este valor fuera de develop_cards
+            // Ya esta sacado.
             used_knights: 0,
         })
     }
@@ -349,14 +334,14 @@ function build_city(game, player, ncoor) {
     // - Poblado: 1, Trigo: 2, Piedra: 3
     game.players[i].resources['Trigo']  -= 2
     game.players[i].resources['Piedra'] -= 3
-    update_actions_with_cost(game)
+    update_buildable_buildings(game)
 
     // Adding the new city
-    let cities_set = (game.players[i].cities.length > 0) ? new Set(game.players[i].cities) : new Set()
+    let cities_set = new Set(game.players[i].cities)
     cities_set.add(ncoor)
     game.players[i].cities = [...cities_set]
     // Removing the old village
-    let villages_set = (game.players[i].villages.length > 0) ? new Set(game.players[i].villages) : new Set()
+    let villages_set = new Set(game.players[i].villages)
     villages_set.delete(ncoor)
     game.players[i].villages = [...villages_set]
 
@@ -381,24 +366,23 @@ function build_road(game, player, rcoor) {
     if (game.phase === 3) {
         game.players[i].resources['Madera']--
         game.players[i].resources['Ladrillo']--
-        update_actions_with_cost(game)
+        update_buildable_buildings(game)
     }
 
     // Adding the new road
     game.board.roads[rcoor].id = player
-    let roads_set = (game.players[i].roads.length > 0) ? new Set(game.players[i].roads) : new Set()
+    let roads_set = new Set(game.players[i].roads)
     roads_set.add(rcoor)
     game.players[i].roads = [...roads_set]
     // Deleting the road from the available roads
     for (let p of game.players) {
-        let free_roads_set = (p.free_roads.length > 0) ? new Set(p.free_roads) : new Set()
+        let free_roads_set = new Set(p.free_roads)
         free_roads_set.delete(rcoor)
         p.free_roads = [...free_roads_set]
     }
 
     // Adding the possible new roads
-    let free_nodes_set = (game.players[i].free_nodes.length > 0) ? new Set(game.players[i].free_nodes) : new Set()
-    let free_roads_set = (game.players[i].free_roads.length > 0) ? new Set(game.players[i].free_roads) : new Set()
+    let free_nodes_set = new Set(game.players[i].free_nodes), free_roads_set = new Set(game.players[i].free_roads)
     for (let coord of coords) {
         let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord), free_node = true
         // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
@@ -507,18 +491,17 @@ function build_village(game, player, ncoor) {
         game.players[i].resources['Madera']--
         game.players[i].resources['Ladrillo']--
         game.players[i].resources['Lana']--
-        update_actions_with_cost(game)
+        update_buildable_buildings(game)
     }
 
     // Adding the new village:
-    let villages_set = (game.players[i].villages.length > 0) ? new Set(game.players[i].villages) : new Set()
+    let villages_set = new Set(game.players[i].villages)
     game.board.nodes[ncoor].building = { player: player, type: 'Village'}
     villages_set.add(ncoor)
     game.players[i].villages = [...villages_set]
 
     // Adding the new roads:
-    let free_roads_set = (game.players[i].free_roads.length > 0) ? new Set(game.players[i].free_roads) : new Set()
-    let first_roads_set = new Set()
+    let free_roads_set = new Set(game.players[i].free_roads), first_roads_set = new Set()
     if (x%2 === 0) {
         if (x-1 > 0) {
             rcoor = rcoor_toString(game, [coords, {x:x-1, y:y}])
@@ -581,7 +564,7 @@ function build_village(game, player, ncoor) {
 
     // Removing the blocked nodes:
     for (let p = 0; p < 4; p++) {
-        let free_nodes_set = (game.players[p].free_nodes.length > 0) ? new Set(game.players[p].free_nodes) : new Set()
+        let free_nodes_set = new Set(game.players[p].free_nodes)
         // A) The selected node from each player:
         free_nodes_set.delete(ncoor)
         // B) The colindant nodes from each player:
@@ -622,17 +605,22 @@ function build_village(game, player, ncoor) {
 function buy_cards(game, player) {
 
     let i = game.players.findIndex(curr_player => curr_player.name === player)
-    // Taking the needed resources for the purchase
-    game.players[i].resources['Trigo']--
-    game.players[i].resources['Piedra']--
-    game.players[i].resources['Lana']--
-    update_actions_with_cost(game)
 
-    // Getting the first develop card of the deck
-    let card = game.develop_cards.shift()
-    // Adding the new card to the player inventory
-    game.players[i].develop_cards[card]++
-
+    let card = game.board.cartasDesarrollo.shift();   //Sacamos la primera carta del vector
+    game.players[index].resources['Grano']--
+    game.players[index].resources['Piedra']--
+    game.players[index].resources['Lana']--
+    if(card == 'Caballero'){
+        game.players[index].develop_cards.Caballero++;
+    }else if(card == 'Descubrimiento'){
+        game.players[index].develop_cards.Descubrimiento++;
+    }else if(card == 'Carreteras'){
+        game.players[index].develop_cards.Cartas_Carreteras++;
+    }else if(card == 'Monopolio'){
+        game.players[index].develop_cards.Monopolio++;
+    }else if(card == 'Punto'){
+        game.players[index].develop_cards.Punto++;
+    }
 }
 
 /**
@@ -719,16 +707,16 @@ function roll_the_dices(game) {
             if (resources > 7) {
                 let nresources = Object.keys(p.resources).length
                 for (let i = total/2; i > 0; i++) {
-                    let kill_resource = biomesResources[random(0, nresources)]
+                    let kill_resource = biome_resources[random(0, nresources)]
                     while (p.resources[kill_resource] == 0) {
-                        kill_resource = biomesResources[random(0, nresources)]
+                        kill_resource = biome_resources[random(0, nresources)]
                     }
                     p.resources[kill_resource]--
                 }
             }
         }
     }
-    update_actions_with_cost(game)
+    update_buildable_buildings(game)
 }
 
 /**
@@ -737,7 +725,7 @@ function roll_the_dices(game) {
  * 
  * @param {*} game 
  */
-function update_actions_with_cost(game) {
+function update_buildable_buildings(game) {
     for (let p of game.players) {
         // Village
         if (p.resources['Trigo'] > 0 && p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0 && p.resources['Lana']) {
@@ -756,12 +744,6 @@ function update_actions_with_cost(game) {
             p.can_build[2] = true
         } else {
             p.can_build[2] = false
-        }
-        // Buy cards
-        if (p.resources['Trigo'] > 0 && p.resources['Piedra'] > 0 && p.resources['Lana'] > 0) {
-            p.can_buy = true
-        } else {
-            p.can_buy = false
         }
     }
 }
@@ -962,7 +944,138 @@ function order_selection(game, order_selection_rolls) {
     game.phase = 1
 }
 
+function game_simulation() {
+    console.log("=================== CREACIÓN DE PARTIDA Y JUGADORES ===================")
+    game = create_game()
+    rl.question(`<Press enter to join>`, () => {
+        //game.players.push(create_player(ids[0]))
+        console.log(`====> Player #${game.players[0].id} has joined`) 
+        rl.question(`<Press enter to join>`, () => {
+            //game.players.push(create_player(ids[1]))
+            console.log(`====> Player #${game.players[1].id} has joined`) 
+            rl.question(`<Press enter to join>`, () => {
+                //game.players.push(create_player(ids[2]))
+                console.log(`====> Player #${game.players[2].id} has joined`) 
+                rl.question(`<Press enter to join>`, () => {
+                    //game.players.push(create_player(ids[3]))
+                    console.log(`====> Player #${game.players[3].id} has joined`)
+                    console.log('<Before starting the game>', game)
+                    start_game(game)
+                    console.log('<After starting the game>', game)
+                    order_selection_simulation(game)
+                })
+            })
+        })
+    })
+}
 
+function order_selection_simulation(game) {
+    console.log("=================== SIMULACION DE SELECCIÓN DE TURNO ===================")
+    let order_selection_rolls = new Array(game.players.length), res = 0
+    rl.question(`<Press enter to roll the dices>`, () => {
+        res = dices()
+        order_selection_rolls[game.current_turn++] = res
+        console.log(`====> Player #${game.players[0].id} got a ${res}`) 
+
+        rl.question(`<Press enter to join>`, () => {
+            res = dices()
+            order_selection_rolls[game.current_turn++] = res
+            console.log(`====> Player #${game.players[1].id} got a ${res}`)
+
+            rl.question(`<Press enter to join>`, () => {
+                res = dices()
+                order_selection_rolls[game.current_turn++] = res
+                console.log(`====> Player #${game.players[2].id} got a ${res}`) 
+
+                rl.question(`<Press enter to join>`, () => {
+                    res = dices()
+                    order_selection_rolls[game.current_turn++] = res
+                    console.log(`====> Player #${game.players[3].id} got a ${res}`)
+                    console.log('<Unordered players>', game.players)
+                    order_selection(game, order_selection_rolls)
+                    console.log('<Ordered players>', game.players)
+                    round_simulation(game)
+                })
+            })
+        })
+    })
+}
+
+function order_selection(game,id){
+    let index = game.players.findIndex(player => player.id === id);
+    game.order[index] = dices();
+}
+
+function round_simulation(game) {
+    console.log("=================== SIMULACION DE UNA RONDA ===================")
+    console.log(`Turn ${game.current_turn}`)
+    console.log(`Player #${game.players[game.current_turn].id}`)
+    console.log(game.players)
+
+    if (game.phase < 3) {
+        // =====> SIMULAMOS LA CONSTRUCCIÓN DE PUEBLO: AQUI HABRIA QUE LLAMAR A BUILD_VILLAGE UNA VEZ EL JUGADOR LE DE A ESE BOTON.
+        console.log('< Construcción del poblado >')
+        rl.question('Coordenada en x: ', (x) => {
+            rl.question('Coordenada en y: ', (y) => {
+                build_village(game, game.players[game.current_turn].id, {x:parseInt(x),y:parseInt(y)})
+                // =====> SIMULAMOS LA CONSTRUCCIÓN DE CARRETERA: AQUI HABRIA QUE LLAMAR A BUILD_ROAD UNA VEZ EL JUGADOR LE DE A ESE BOTON.
+                console.log('< Construcción de la carretera >')
+                rl.question('Coordenada en x del primer nodo: ', (x_1) => {
+                    rl.question('Coordenada en y del primer nodo: ', (y_1) => {
+                        rl.question('Coordenada en x del segundo nodo: ', (x_2) => {
+                            rl.question('Coordenada en y del segundo nodo: ', (y_2) => {
+                                build_road(game, game.players[game.current_turn].id, 
+                                    [{x:parseInt(x_1),y:parseInt(y_1)},{x:parseInt(x_2),y:parseInt(y_2)}])
+                                next_turn(game)
+                                round_simulation(game)
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    } else {
+        build_simulation(game)
+    }
+}
+
+function build_simulation(game) {
+    rl.question('(0) Pueblo, (1) Ciudad, (2) Carretera: ', (option) => {
+        if (option === "0") {
+            console.log('< Construcción del poblado >')
+            rl.question('Coordenada en x: ', (x) => {
+                rl.question('Coordenada en y: ', (y) => {
+                    build_village(game, game.players[game.current_turn].id, {x:parseInt(x),y:parseInt(y)})
+                    next_turn(game)
+                    round_simulation(game)
+                })
+            })
+        } else if (option === "1") {
+            console.log('< Construcción de la ciudad >')
+            rl.question('Coordenada en x: ', (x) => {
+                rl.question('Coordenada en y: ', (y) => {
+                    build_city(game, game.players[game.current_turn].id, {x:parseInt(x),y:parseInt(y)})
+                    next_turn(game)
+                    round_simulation(game)
+                })
+            })
+        } else if (option === "2") {
+            console.log('< Construcción de la carretera >')
+            rl.question('Coordenada en x del primer nodo: ', (x_1) => {
+                rl.question('Coordenada en y del primer nodo: ', (y_1) => {
+                    rl.question('Coordenada en x del segundo nodo: ', (x_2) => {
+                        rl.question('Coordenada en y del segundo nodo: ', (y_2) => {
+                            build_road(game, game.players[game.current_turn].id, 
+                                [{x:parseInt(x_1),y:parseInt(y_1)},{x:parseInt(x_2),y:parseInt(y_2)}])
+                            next_turn(game)
+                            round_simulation(game)
+                        })
+                    })
+                })
+            })
+        }
+    })
+}
 
 // game_simulation()
 module.exports = {
@@ -971,11 +1084,11 @@ module.exports = {
     build_city,
     build_road,
     build_village,
-    buy_cards,
     next_turn,
     roll_the_dices,
 
     // De momento estos no estan limpiados:
+    buy_cards,
     monopoly,
     discovery,
     knight,
