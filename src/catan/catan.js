@@ -45,7 +45,6 @@ function rcoor_toString(game, coords) {
     let fst_coor = ncoor_toString(coords[0])
     let snd_coor = ncoor_toString(coords[1])
     let rcoor = fst_coor + ":" + snd_coor
-    console.log(rcoor)
     if (rcoor in game.board.roads) {
         return rcoor
     } else {
@@ -270,6 +269,7 @@ function create_game(code, players) {
             name: players[i],
             free_nodes: Object.keys(game.board.nodes),
             free_roads: [],
+            first_roads: [],
             villages: [],
             cities: [],
             roads: [],
@@ -318,24 +318,33 @@ function build_village(game, player, ncoor) {
     game.players[i].villages = [...villages_set]
 
     // Adding the new roads:
-    let free_roads_set = new Set(game.players[i].free_roads)
+    let free_roads_set = new Set(game.players[i].free_roads), first_roads_set = new Set()
     if (x%2 === 0) {
         if (x-1 > 0) {
             rcoor = rcoor_toString(game, [coords, {x:x-1, y:y}])
             if (game.board.roads[rcoor].id == null) {
                 free_roads_set.add(rcoor)
+                if (game.phase !== 3) {
+                    first_roads_set.add(rcoor)
+                }
             }
         }
         if (y-1 >= borders[x+1][0]) {
             rcoor = rcoor_toString(game, [coords, {x:x+1, y:y-1}]);
             if (game.board.roads[rcoor].id == null) {
                 free_roads_set.add(rcoor)
+                if (game.phase !== 3) {
+                    first_roads_set.add(rcoor)
+                }
             }
         }
         if (y+1 <= borders[x+1][1]) {
             rcoor = rcoor_toString(game, [coords, {x:x+1, y:y+1}]);
             if (game.board.roads[rcoor].id == null) {
                 free_roads_set.add(rcoor)
+                if (game.phase !== 3) {
+                    first_roads_set.add(rcoor)
+                }
             }
         }
     } else {
@@ -343,22 +352,32 @@ function build_village(game, player, ncoor) {
             rcoor = rcoor_toString(game, [coords, {x:x-1, y:y-1}]);
             if (game.board.roads[rcoor].id == null) {
                 free_roads_set.add(rcoor)
+                if (game.phase !== 3) {
+                    first_roads_set.add(rcoor)
+                }
             }
         }
         if (y+1 <= borders[x-1][1]) {
             rcoor = rcoor_toString(game, [coords, {x:x-1, y:y+1}]);
             if (game.board.roads[rcoor].id == null) {
                 free_roads_set.add(rcoor)
+                if (game.phase !== 3) {
+                    first_roads_set.add(rcoor)
+                }
             }
         }
         if (x+1 < 12) {
             rcoor = rcoor_toString(game, [coords, {x:x+1, y:y}]);
             if (game.board.roads[rcoor].id == null) {
                 free_roads_set.add(rcoor)
+                if (game.phase !== 3) {
+                    first_roads_set.add(rcoor)
+                }
             }
         }
     }
-    game.players[i].free_roads = [...free_roads_set]
+    game.players[i].free_roads  = [...free_roads_set]
+    game.players[i].first_roads = [...first_roads_set]
 
     // Removing the blocked nodes:
     for (let p = 0; p < 4; p++) {
@@ -407,6 +426,8 @@ function build_village(game, player, ncoor) {
 function build_road(game, player, rcoor) {
 
     //console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toRcoor(rcoor))
+
+    console.log("NODES: ", game.board.nodes)
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     let coords = string_toRcoor(rcoor)
 
@@ -423,42 +444,46 @@ function build_road(game, player, rcoor) {
     let free_nodes_set = new Set(game.players[i].free_nodes), free_roads_set = new Set(game.players[i].free_roads)
     free_roads_set.delete(rcoor)
     for (let coord of coords) {
+        console.log("COORD: ", coord)
         let x = coord.x, y = coord.y, ncoor = ncoor_toString(coord), free_node = true
         // Para x = par (2n). (x,y) -> (x-1,y),(x+1,y-1),(x+1,y+1):
         if (x % 2 === 0) {
             if (x-1 > 0) {
                 let mcoor = {x:x-1, y:y}
+                console.log("X-1, Y: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
                         free_roads_set.add(rcoor)
                     }
                 }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                if (game.board.nodes[ncoor].building != null || game.board.nodes[ncoor_toString(mcoor)].building != null) {
                     free_node = false
                 }
             }
             if (y-1 >= borders[x+1][0]) {
                 let mcoor = {x:x+1, y:y-1}
+                console.log("X+1, Y-1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
                         free_roads_set.add(rcoor)
                     }
                 }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                if (game.board.nodes[ncoor].building != null || game.board.nodes[ncoor_toString(mcoor)].building != null) {
                     free_node = false
                 }
             }
             if (y+1 <= borders[x+1][1]) {
                 let mcoor = {x:x+1, y:y+1}
+                console.log("X+1, Y+1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
                         free_roads_set.add(rcoor)
                     }
                 }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                if (game.board.nodes[ncoor].building != null || game.board.nodes[ncoor_toString(mcoor)].building != null) {
                     free_node = false
                 }
             }
@@ -466,37 +491,40 @@ function build_road(game, player, rcoor) {
         } else {
             if (y-1 >= borders[x-1][0]) {
                 let mcoor = {x:x-1, y:y-1}
+                console.log("X-1, Y-1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
                         free_roads_set.add(rcoor)
                     }
                 } 
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                if (game.board.nodes[ncoor].building != null || game.board.nodes[ncoor_toString(mcoor)].building != null) {
                     free_node = false
                 }
             }
             if (y+1 <= borders[x-1][1]) {
                 let mcoor = {x:x-1, y:y+1}
+                console.log("X-1, Y+1: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
                         free_roads_set.add(rcoor)
                     }
                 }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                if (game.board.nodes[ncoor].building != null || game.board.nodes[ncoor_toString(mcoor)].building != null) {
                     free_node = false
                 }
             }
             if (x+1 < 12) {
                 let mcoor = {x:x+1, y:y}
+                console.log("X+1, Y: ", ncoor, mcoor)
                 if (game.board.nodes[ncoor].building == null || game.board.nodes[ncoor].building.id === player) {
                     rcoor = rcoor_toString(game, [coord, mcoor]);
                     if (game.board.roads[rcoor].id == null) {
                         free_roads_set.add(rcoor)
                     }
                 }
-                if (game.board.nodes[ncoor_toString(mcoor)].building != null) {
+                if (game.board.nodes[ncoor].building != null || game.board.nodes[ncoor_toString(mcoor)].building != null) {
                     free_node = false
                 }
             } 

@@ -47,7 +47,7 @@ const Socket = {
                     //console.log("Partida actual")
                     //console.log(partida.game.current_turn)
                     //console.log("-------------------")
-                    console.log("PARTIDA ACTUAL: ", partida.game)
+                    //console.log("PARTIDA ACTUAL: ", partida.game)
                     this.sendGame(codigo_partida, partida.game)
                     
                     for (jugador in partida.jugadores ){
