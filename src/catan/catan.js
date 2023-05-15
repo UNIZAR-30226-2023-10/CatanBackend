@@ -288,7 +288,7 @@ function create_development_deck() {
 // - Si esta comenzada o no (phase)
 function create_game(code, players) { 
 
-    players = shuffle(players)
+    //players = shuffle(players)
     let game    = {
         code: code,       // Codigo de la partida
         players: [],      // Jugadores de la partida
