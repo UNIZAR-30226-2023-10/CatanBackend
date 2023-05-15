@@ -9,7 +9,8 @@ const MoveType = {
     use_knight: 8,
     order_selection: 9,
     change_recourse: 10,
-    next_turn: 11
+    next_turn: 11,
+    builtRoadFree: 12
 }
 
 module.exports = MoveType

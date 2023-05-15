@@ -322,13 +322,14 @@ function create_game(code, players) {
             can_build: [ false, false, false ],
             develop_cards: {
                 'Caballeros': 0,
-                'Carreteras': 0,
+                'Carreteras': 1,
                 'Monopolios': 0,
                 'Descubrimientos': 0,
                 'Puntos': 0
             },
             can_buy: false,
             used_knights: 0,
+            built_free: 0
         })
     }
     console.log('Tablero creado')
@@ -381,7 +382,8 @@ function build_road(game, player, rcoor) {
 
     // Taking the needed resources:
     // - Madera: 1, Ladrillo: 1
-    if (game.phase === 3) {
+    console.log('game.players[i].built_free',game.players[i].built_free)
+    if (game.phase === 3 && game.players[i].built_free === 0) {
         game.players[i].resources['Madera']--
         game.players[i].resources['Ladrillo']--
         update_actions_with_cost(game)
@@ -721,7 +723,7 @@ function roll_the_dices(game) {
             }, 0);
             if (resources > 7) {
                 let nresources = Object.keys(p.resources).length
-                for (let i = total/2; i > 0; i++) {
+                for (let i = resources/2; i > 0; i++) {
                     let kill_resource = biomesResources[random(0, nresources)]
                     while (p.resources[kill_resource] == 0) {
                         kill_resource = biomesResources[random(0, nresources)]
@@ -881,22 +883,38 @@ function barajar_desarrollos(game) {
     }
 }
 
-function monopoly(game, id, resource) {
-    let index = game.players.findIndex(player => player.id === id)
+function monopoly(game, player, resource) {
+    
+    let index = game.players.findIndex(curr_player => curr_player.name === player)
     game.players[index].develop_cards.Monopolios--
     let res = 0;
     for(let i = 0; i < game.players.length; i++){
-        res += game.players[i].resources[resource]
-        game.players[i].resources[resource]=0
+        res += game.players[i].resources[resource]  //Cartas totales del recurso repartidas en la partida
+        game.players[i].resources[resource]=0       //Deja a todos los jugadores a 0
     }
-    game.players[index].resources[resource]=res
+    game.players[index].resources[resource]=res     //Asigna las cartas al jugador que uso la carta de monopolio
+    
 }
 
-function discovery (game, id, resource, resource2) {
-    let index = game.players.findIndex(player => player.id === id)
-    game.players[index].develop_cards.Descubrimientos--
-    game.players[index].resources[resource]++
-    game.players[index].resources[resource2]++
+function discovery (game, player, resources) {
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    game.players[i].develop_cards.Descubrimientos--
+    game.players[i].resources[resources[0]]++
+    game.players[i].resources[resources[1]]++
+}
+
+function builtRoadFree (game, player){
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    if(game.players[i].built_free === 1){
+        console.log('Desactivo free mode')
+        game.players[i].built_free = 0 //La segunda vez desactivo el modo builtFree
+        console.log('game.players[i].built_free:', game.players[i].built_free)
+    }else{
+        console.log('Active free mode')
+        game.players[i].develop_cards.Carreteras--  //Elimino la carta usada
+        game.players[i].built_free = 1   //La primera vez activo el modo builtFree
+        console.log('game.players[i].built_free:', game.players[i].built_free)
+    }
 }
 
 function change_recourse (game, id, resource, resource2) {  //resource -> recurso que quiero ||resource2 -> recurso por el que cambio
@@ -955,5 +973,6 @@ module.exports = {
     discovery,
     change_recourse,
     getMoves,
-    barajar_desarrollos
+    barajar_desarrollos,
+    builtRoadFree
 }

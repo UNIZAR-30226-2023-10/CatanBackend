@@ -16,7 +16,8 @@ const  {
     change_recourse,
     start_game,
     getMoves,
-    barajar_desarrollos
+    barajar_desarrollos,
+    builtRoadFree,
 
 } = require('./catan.js');
 
@@ -54,6 +55,15 @@ const CatanModule = {
         } else if (move.id === MoveType.use_knight) {
             console.log("Using the knight")
             use_knight(game, player, move.robber_biome)
+        } else if (move.id === MoveType.discovery) {
+            console.log("Using discovery")
+            use_knight(game, player, move.resources)
+        } else if (move.id === MoveType.monopoly) {
+            console.log("Using monopoly")
+            use_knight(game, player, move.resources)
+        } else if (move.id === MoveType.builtRoadFree) {
+            console.log("Using free roads")
+            builtRoadFree(game, player)
         }
         
         /*switch(move.id) {
