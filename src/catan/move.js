@@ -42,7 +42,7 @@ const CatanModule = {
             next_turn(game, player)  
         } else if (move.id === MoveType.roll_dices) {
             console.log("Roll the dices")
-            roll_the_dices(game)
+            roll_the_dices(game, player)
         } else if (move.id === MoveType.use_knight) {
             console.log("Using the knight")
             use_knight(game, player, move.robber_biome)

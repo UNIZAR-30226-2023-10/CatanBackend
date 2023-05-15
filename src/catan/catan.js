@@ -339,6 +339,7 @@ function create_game(code, players) {
             },
             can_buy: false,
             used_knights: 0,
+            force_knight: false,
             roads_build_4_free: 0
         })
     }
@@ -712,7 +713,7 @@ function next_turn(game, player) {
  * @param {*} game  Partida sobre la que se juega.
  * @param {*} id    Jugador que ha decidido tirar los dados.
  */
-function roll_the_dices(game) {
+function roll_the_dices(game, player) {
 
     game.dices_res = [random(1,6), random(1,6)]
     let res = game.dices_res[0] + game.dices_res[1]
@@ -735,21 +736,24 @@ function roll_the_dices(game) {
         }
     } else {
         console.log("Ha salido 7")
-        //for (let p of game.players) {
-        //    let resources = Object.values(p.resources).reduce((total, num) => {
-        //        return total + num;
-        //    }, 0);
-        //    if (resources > 7) {
-        //        let nresources = Object.keys(p.resources).length
-        //        for (let i = resources/2; i > 0; i++) {
-        //            let kill_resource = biomesResources[random(0, nresources)]
-        //            while (p.resources[kill_resource] == 0) {
-        //                kill_resource = biomesResources[random(0, nresources)]
-        //            }
-        //            p.resources[kill_resource]--
-        //        }
-        //    }
-        //}
+        let i = game.players.findIndex(curr_player => curr_player.name === player)
+        game.players[i].force_knight = true
+
+        for (let p of game.players) {
+            let total_resources = Object.values(p.resources).reduce((total, num) => {
+                return total + num
+            },0)
+            if (total_resources > 7) {
+                for (let i = 0; i < total_resources/2; i++) {
+                    let kill_resource = biomesResources[random(0, 5)]
+                    while (p.resources[kill_resource] === 0) {
+                        kill_resource = biomesResources[random(0, 5)]
+                    }
+                    p.resources[kill_resource]--
+                    console.log(p.name, ':', p.resources)
+                }
+            }
+        }
     }
     update_actions_with_cost(game)
 }
@@ -801,10 +805,12 @@ function use_knight(game, player, robber_biome) {
     let i = game.players.findIndex(curr_player => curr_player.name === player)
 
     // Updating the knight
-    if ((game.dices_res[0] + game.dices_res[1]) !== 7) {
+    if (!game.players[i].force_knight) {
         game.players[i].develop_cards['Caballeros']--
+        game.players[i].used_knights++
+    } else {
+        game.players[i].force_knight = false
     }
-    game.players[i].used_knights++
     // Updating the robber
     game.board.robber_biome = robber_biome
 
