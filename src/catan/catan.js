@@ -230,10 +230,10 @@ function create_board() {
         roads: edges,
         //buildings: new Set(),
         //growth_cards: {
-        //    Caballero : 14,
-        //    Carreteras : 2,
-        //    Monopolio  : 2,
-        //    Descubrimiento : 2,
+        //    Caballeros: 14,
+        //    Carreteras: 2,
+        //    Monopolios: 2,
+        //    Descubrimientos: 2,
         //    Punto: 5
         //},
         //cartasDesarrollo: [],
@@ -257,7 +257,7 @@ function create_board() {
 // --------------------------------------
 //   TOTAL                          25
 const nDevelopCards     = 25
-const developCardsNames = ['Caballero', 'Carreteras', 'Descubrimiento', 'Monopolio', 'Biblioteca', 'Capilla', 'Gran Salon', 'Mercado', 'Universidad']
+const developCardsNames = ['Caballeros', 'Carreteras', 'Descubrimiento', 'Monopolio', 'Biblioteca', 'Capilla', 'Palacio', 'Mercado', 'Universidad']
 const developCardsQuant = [14, 2, 2, 2, 1, 1, 1, 1, 1]
 const developCardsProbs = developCardsQuant.map(x => x / nDevelopCards);
 
@@ -280,7 +280,7 @@ function create_development_deck() {
             }
         }
     }
-    return shuffled_deck
+    return shuffle(shuffle(shuffled_deck))
 }
 
 // - Codigo.
@@ -288,6 +288,7 @@ function create_development_deck() {
 // - Si esta comenzada o no (phase)
 function create_game(code, players) { 
 
+    players = shuffle(players)
     let game    = {
         code: code,       // Codigo de la partida
         players: [],      // Jugadores de la partida
@@ -313,23 +314,27 @@ function create_game(code, players) {
             cities: [],
             roads: [],
             resources: {
-                'Trigo': 0,
-                'Madera': 0,
-                'Ladrillo': 0,
-                'Piedra': 0,
-                'Lana': 0
+                'Trigo': 10,
+                'Madera': 10,
+                'Ladrillo': 10,
+                'Piedra': 10,
+                'Lana': 10
             },
             can_build: [ false, false, false ],
             develop_cards: {
-                'Caballeros': 0,
-                'Carreteras': 1,
-                'Monopolios': 0,
-                'Descubrimientos': 0,
-                'Puntos': 0
+                'Caballeros': 10,
+                'Carreteras': 10,
+                'Monopolios': 10,
+                'Descubrimientos': 10,
+                'Capilla': 0,
+                'Biblioteca': 0,
+                'Mercado': 0,
+                'Palacio': 0,
+                'Universidad': 0,
             },
             can_buy: false,
             used_knights: 0,
-            built_free: 0
+            roads_build_4_free: 0
         })
     }
     console.log('Tablero creado')
@@ -374,7 +379,7 @@ function build_city(game, player, ncoor) {
  * @param {*} player        Jugador que ha pedido construir.
  * @param {[{x:any, y:any}, {x:any, y:any}]} coords    Coordenadas del nodo donde construir.
  */
-function build_road(game, player, rcoor) {
+function build_road(game, player, rcoor, free_road = false) {
 
     //console.log("NOMBRE DEL JUGADOR: ", player, ", COORDS: ", string_toRcoor(rcoor))
     let i = game.players.findIndex(curr_player => curr_player.name === player)
@@ -382,8 +387,7 @@ function build_road(game, player, rcoor) {
 
     // Taking the needed resources:
     // - Madera: 1, Ladrillo: 1
-    console.log('game.players[i].built_free',game.players[i].built_free)
-    if (game.phase === 3 && game.players[i].built_free === 0) {
+    if (game.phase === 3 && !free_road) {
         game.players[i].resources['Madera']--
         game.players[i].resources['Ladrillo']--
         update_actions_with_cost(game)
@@ -634,10 +638,15 @@ function buy_cards(game, player) {
     update_actions_with_cost(game)
 
     // Getting the first develop card of the deck
-    let card = game.develop_cards.shift()
-    // Adding the new card to the player inventory
-    game.players[i].develop_cards[card]++
-
+    if (game.develop_cards.length > 0) {
+        let card = game.develop_cards.shift()
+        // Adding the new card to the player inventory
+        game.players[i].develop_cards[card]++
+    } else {
+        for (p of game.players) {
+            p.can_buy = false
+        }
+    }
 }
 
 /**
@@ -757,13 +766,13 @@ function update_actions_with_cost(game) {
             p.can_build[1] = false
         }
         // Road
-        if (p.resources['Madera'] > 0 && p.resources['Ladrillo']) {
+        if (p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0) {
             p.can_build[2] = true
         } else {
             p.can_build[2] = false
         }
         // Buy cards
-        if (p.resources['Trigo'] > 0 && p.resources['Piedra'] > 0 && p.resources['Lana'] > 0) {
+        if (p.resources['Trigo'] > 0 && p.resources['Piedra'] > 0 && p.resources['Lana'] > 0 && game.develop_cards.length > 0) {
             p.can_buy = true
         } else {
             p.can_buy = false
@@ -795,69 +804,111 @@ function use_knight(game, player, robber_biome) {
             let total_resources   = Object.values(game.players[victim].resources).reduce((total, num) => {
                 return total + num;
             }, 0)
-            let selected_resource = Math.floor(Math.random() * total_resources)
-            if (selected_resource < game.players[victim].resources['Trigo']) {
-                game.players[i].resources['Trigo']++
-                game.players[victim].resources['Trigo']--
-            } else if (selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'])) {
-                game.players[i].resources['Madera']++
-                game.players[victim].resources['Madera']--
-            } else if (selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'])) {
-                game.players[i].resources['Ladrillo']++
-                game.players[victim].resources['Ladrillo']--
-            } else if (selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'] + game.players[victim].resources['Piedra'])) {
-                game.players[i].resources['Piedra']++
-                game.players[victim].resources['Piedra']--
-            } else {
-                game.players[i].resources['Lana']++
-                game.players[victim].resources['Lana']--
+            if (total_resources > 0) {
+                let selected_resource = Math.floor(Math.random() * total_resources)
+                if (node.building.type === 'Village') {
+                    if (game.players[victim].resources['Trigo'] > 0 && selected_resource < game.players[victim].resources['Trigo']) {
+                        game.players[i].resources['Trigo']++
+                        game.players[victim].resources['Trigo']--
+                    } else if (game.players[victim].resources['Madera'] > 0 && selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'])) {
+                        game.players[i].resources['Madera']++
+                        game.players[victim].resources['Madera']--
+                    } else if (game.players[victim].resources['Ladrillo'] > 0 && selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'])) {
+                        game.players[i].resources['Ladrillo']++
+                        game.players[victim].resources['Ladrillo']--
+                    } else if (game.players[victim].resources['Piedra'] > 0 && selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'] + game.players[victim].resources['Piedra'])) {
+                        game.players[i].resources['Piedra']++
+                        game.players[victim].resources['Piedra']--
+                    } else if (game.players[victim].resources['Lana'] > 0) {
+                        game.players[i].resources['Lana']++
+                        game.players[victim].resources['Lana']--
+                    }
+                } else if (node.building.type === 'City') {
+                    if (game.players[victim].resources['Trigo'] > 1 && selected_resource < game.players[victim].resources['Trigo']) {
+                        game.players[i].resources['Trigo'] += 2
+                        game.players[victim].resources['Trigo'] -= 2
+                    } else if (game.players[victim].resources['Madera'] > 1 && selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'])) {
+                        game.players[i].resources['Madera'] += 2
+                        game.players[victim].resources['Madera'] -= 2
+                    } else if (game.players[victim].resources['Ladrillo'] > 1 && selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'])) {
+                        game.players[i].resources['Ladrillo'] += 2
+                        game.players[victim].resources['Ladrillo'] -= 2
+                    } else if (game.players[victim].resources['Piedra'] > 1 && selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'] + game.players[victim].resources['Piedra'])) {
+                        game.players[i].resources['Piedra'] += 2
+                        game.players[victim].resources['Piedra'] -= 2
+                    } else if (game.players[victim].resources['Lana'] > 1) {
+                        game.players[i].resources['Lana'] += 2
+                        game.players[victim].resources['Lana'] -= 2
+                    }
+                }
             }
+
+
         }
     })
     update_actions_with_cost(game)
+}
+
+/**
+ * 
+ * @param {*} game 
+ * @param {*} player 
+ * @param {*} resource 
+ */
+function use_monopoly(game, player, resource) {
+
+
+    console.log(resource)
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    game.players[i].develop_cards['Monopolios']--
+
+    // Se quitan los recursos del recurso seleccionado a todos los jugadores
+    let total_resource = 0
+    for (let p of game.players) {
+        total_resource += p.resources[resource]
+        p.resources[resource] = 0
+    }
+    // Se le asigna todos los recursos al jugador que ha jugado el monopolio 
+    game.players[i].resources[resource] = total_resource  
+}
+
+/**
+ * 
+ * @param {*} game 
+ * @param {*} player 
+ */
+function use_roads_build_4_free(game, player) {
+
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    game.players[i].roads_build_4_free++
+    console.log(`Ha construido ${game.players[i].roads_build_4_free } carreteras gratis`)
+    if (game.players[i].roads_build_4_free === 1) {
+        game.players[i].develop_cards['Carreteras']--
+    } else if (game.players[i].roads_build_4_free === 2) {
+        game.players[i].roads_build_4_free = 0
+    }
+}
+
+/**
+ * 
+ * @param {*} game 
+ * @param {*} player 
+ * @param {*} resources 
+ */
+function use_year_of_plenty(game, player, resources) {
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+    game.players[i].develop_cards.Descubrimientos--
+    game.players[i].resources[resources[0]]++
+    game.players[i].resources[resources[1]]++
 }
 
 // ============================================================================
 // SIGUIENTES FUNCIONES A LIMPIAR
 // ============================================================================
 
-
 // ============================================================================
 // CODIGO A LIMPIAR
 // ============================================================================
-//TODO : Completar
-function getMoves(id, game){
-
-    let coordsVillage = [{x: 1, y: 1},
-                    {x: 2, y: 2}]
-    let coordsRoad =[coordsVillage, coordsVillage] 
-    return {
-        //roll_dices
-        "0" : "aux",
-        //build_village
-        "1" : coordsVillage,
-        // build_city
-        "2" : coordsVillage,
-        // build_road
-        "3": coordsRoad,
-        // buy_cards
-        "4": "aux",
-        // monopoly
-        "5" : ["resurce1", "resurce2"],
-        // discovery
-        "6" : [["resurce1", "resurce2"],["resurce1", "resurce2"]],
-        // knight
-        "7" : [ {hexagon : 1, idPlayer : 2},
-                {hexagon: 3, idPlayer: 4}],
-        // order_selection
-        "8" : "aux",
-        // change_recourse
-        "9" : [["resurce1", "resurce2"],["resurce1", "resurce2"]],
-        // next_turn
-        "10" : "aux"
-    }
-}
-
 function barajar_desarrollos(game) {
     let randomNumber = 0;
     let numCards = 25;
@@ -883,39 +934,6 @@ function barajar_desarrollos(game) {
     }
 }
 
-function monopoly(game, player, resource) {
-    
-    let index = game.players.findIndex(curr_player => curr_player.name === player)
-    game.players[index].develop_cards.Monopolios--
-    let res = 0;
-    for(let i = 0; i < game.players.length; i++){
-        res += game.players[i].resources[resource]  //Cartas totales del recurso repartidas en la partida
-        game.players[i].resources[resource]=0       //Deja a todos los jugadores a 0
-    }
-    game.players[index].resources[resource]=res     //Asigna las cartas al jugador que uso la carta de monopolio
-    
-}
-
-function discovery (game, player, resources) {
-    let i = game.players.findIndex(curr_player => curr_player.name === player)
-    game.players[i].develop_cards.Descubrimientos--
-    game.players[i].resources[resources[0]]++
-    game.players[i].resources[resources[1]]++
-}
-
-function builtRoadFree (game, player){
-    let i = game.players.findIndex(curr_player => curr_player.name === player)
-    if(game.players[i].built_free === 1){
-        console.log('Desactivo free mode')
-        game.players[i].built_free = 0 //La segunda vez desactivo el modo builtFree
-        console.log('game.players[i].built_free:', game.players[i].built_free)
-    }else{
-        console.log('Active free mode')
-        game.players[i].develop_cards.Carreteras--  //Elimino la carta usada
-        game.players[i].built_free = 1   //La primera vez activo el modo builtFree
-        console.log('game.players[i].built_free:', game.players[i].built_free)
-    }
-}
 
 function change_recourse (game, id, resource, resource2) {  //resource -> recurso que quiero ||resource2 -> recurso por el que cambio
     let index = game.players.findIndex(player => player.id === id)
@@ -956,9 +974,7 @@ function roads_points(game, id){//TODO: Version 1.0
     }
 }
 
-
 module.exports = {
-    // De momento estos estan limpiados:
     create_game,
     build_city,
     build_road,
@@ -967,12 +983,7 @@ module.exports = {
     next_turn,
     roll_the_dices,
     use_knight,
-
-    // De momento estos no estan limpiados:
-    monopoly,
-    discovery,
-    change_recourse,
-    getMoves,
-    barajar_desarrollos,
-    builtRoadFree
+    use_monopoly,
+    use_roads_build_4_free,
+    use_year_of_plenty,
 }

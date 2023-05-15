@@ -1,7 +1,6 @@
 const  { notify }  = require('../routes/auth.routes.js');
 const  { 
-    // De momento estos estan limpiados:
-    create_game,
+
     build_city,
     build_road,
     build_village,
@@ -9,15 +8,9 @@ const  {
     next_turn,
     roll_the_dices,
     use_knight,
-
-    // De momento estos no estan limpiados:
-    monopoly,
-    discovery,
-    change_recourse,
-    start_game,
-    getMoves,
-    barajar_desarrollos,
-    builtRoadFree,
+    use_monopoly,
+    use_roads_build_4_free,
+    use_year_of_plenty,
 
 } = require('./catan.js');
 
@@ -26,9 +19,7 @@ let move = {
     id: 0,            // Tipo de movimiento
     coords: '',       // Coordenadas de construccion, valido para todos.
     robber_biome: -1, // Siguiente bioma del ladron (si hay).
-    // Sin limpiar
-    resource: 'None',   //Tipo de recurso
-    resource2: 'None',  //Tipo de recurso
+    resource: null,   // Recurso seleccionado, tiene diferentes movimientos.
 }
 
 const CatanModule = {
@@ -55,38 +46,21 @@ const CatanModule = {
         } else if (move.id === MoveType.use_knight) {
             console.log("Using the knight")
             use_knight(game, player, move.robber_biome)
-        } else if (move.id === MoveType.discovery) {
-            console.log("Using discovery")
-            use_knight(game, player, move.resources)
-        } else if (move.id === MoveType.monopoly) {
-            console.log("Using monopoly")
-            use_knight(game, player, move.resources)
-        } else if (move.id === MoveType.builtRoadFree) {
+        } else if (move.id === MoveType.use_monopoly) {
+            console.log("Using the monopoly")
+            use_monopoly(game, player, move.resource)
+        } else if (move.id === MoveType.use_roads_build_4_free) {
             console.log("Using free roads")
-            builtRoadFree(game, player)
+            build_road(game, player, move.coords, true)
+            use_roads_build_4_free(game, player)
+        } else if (move.id === MoveType.use_year_of_plenty) {
+            console.log("Using Year of plenty")
+            use_year_of_plenty(game, player, move.resource)
+        } else {
+            console.log('Unknown move')
         }
-        
-        /*switch(move.id) {
-            case MoveType.buy_cards:
-                console.log("buy_cards")
-                buy_cards( game,id);
-                break;
-            
-            case MoveType.monopoly:
-                console.log("monopoly")
-                monopoly( game, id, move.resource);
-                break;
-            
-            case MoveType.discovery:
-                console.log("discovery")
-                discovery( game, id, move.resource, move.resource2);
-                break;
-            
-            case MoveType.knight:
-                console.log("knight")
-                knight(game, id, move.hexagon, move.idPlayer);
-                break;
-            
+
+        /*switch(move.id) {            
             case MoveType.order_selection:
                 console.log("order_selection")
                 order_selection(game,id);
@@ -96,32 +70,10 @@ const CatanModule = {
                 console.log("change_recourse")
                 change_recourse(game,id,resource, resource2);
                 break;
-
-            case MoveType.first_roll:
-                console.log("first_roll")
-                first_roll(game,id); 
-            default: 
-                console.log("id incorrecto")
         }
         */
         return game
     },
-
-    //findMoves(id,game){
-    //    return getMoves(id,game)
-    //},
-
-    //crearPartida(jugadores, code){
-    //    
-    //    let game = create_game(code)
-    //    for (j in jugadores){
-    //        game.players.push(create_player(j))
-    //    }
-    //    console.log(jugadores)
-    //    start_game(game)
-    //    console.log(code)
-    //    return game
-    //}
 }
 
 module.exports = CatanModule

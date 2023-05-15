@@ -1,16 +1,16 @@
 const MoveType = {
-    roll_dices : 1,
-    build_village : 2,
-    build_city: 3,
-    build_road: 4,
-    buy_cards: 5,
-    monopoly: 6,
-    discovery: 7,
-    use_knight: 8,
-    order_selection: 9,
-    change_recourse: 10,
-    next_turn: 11,
-    builtRoadFree: 12
+    build_city:              1,
+    build_road:              2,
+    build_village:           3,
+    buy_cards:               4,
+    next_turn:               5,
+    roll_dices:              6,
+    use_knight:              7,
+    use_monopoly:            8,
+    use_roads_build_4_free:  9,
+    use_year_of_plenty:     10
+    //order_selection: 11,
+    //change_recourse: 12,
 }
 
 module.exports = MoveType
