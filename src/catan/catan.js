@@ -78,8 +78,9 @@ const biomesResources   = ['Trigo', 'Madera', 'Ladrillo', 'Piedra', 'Lana', 'Non
 const biomesQuant       = [4, 4, 3, 3, 4, 1]
 const biomesProbs       = biomesQuant.map(x => x / nBiomes)
 const biomesTokenStarts = [0, 2, 4, 6, 8, 10]
-//     - Fichas numericas ----- A  B  C  D  E  F   G  H   I   J  K  L   M  N  O  P  Q  R
+const biomesTokenLetter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R' ]
 const biomesTokenValues = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
+
 //     - Limites para el calculo de coordenadas en el grid cuadrado.
 const borders = [[3,7],[2,8],[2,8],[1,9],[1,9],[0,10],[0,10],[1,9],[1,9],[2,8],[2,8],[3,7]];
 //   - Como objeto final:
@@ -104,7 +105,9 @@ function create_board() {
                 shuffled_biomes.push({
                     type: biomesNames[i],
                     resource: biomesResources[i],
-                    token: (i !== 5) ? biomesTokenValues[((19-biomes_left)-offset+tokens_start)%18] : 0
+                    token: (i !== 5) ? 
+                        {letter: biomesTokenLetter[((19-biomes_left)-offset+tokens_start)%18], value: biomesTokenValues[((19-biomes_left)-offset+tokens_start)%18]} :
+                        {letter: 'S', value: 0 }
                 })
                 if (i === 5) {
                     offset++
@@ -698,14 +701,14 @@ function roll_the_dices(game) {
         for (let p of game.players) {
             for (let v of p.villages) {
                 game.board.nodes[v].biomes.forEach((biome) => {
-                    if (game.board.biomes[biome].token === res) {
+                    if (game.board.biomes[biome].token.value === res && game.board.robber_biome !== biome) {
                         p.resources[game.board.biomes[biome].resource]++
                     }
                 })
             }
             for (let c of p.cities) {
                 game.board.nodes[c].biomes.forEach((biome) => {
-                    if (game.board.biomes[biome].token === res) {
+                    if (game.board.biomes[biome].token.value === res && game.board.robber_biome !== biome) {
                         p.resources[game.board.biomes[biome].resource] += 2
                     }
                 })
@@ -766,39 +769,57 @@ function update_actions_with_cost(game) {
     }
 }
 
+/**
+ * Funcion que usa el caballero y actualiza las materias primas de los jugadores.
+ * 
+ * @param {*} game 
+ * @param {*} player 
+ * @param {*} robber_biome 
+ */
+function use_knight(game, player, robber_biome) {
+
+    let i = game.players.findIndex(curr_player => curr_player.name === player)
+
+    // Updating the knight
+    game.players[i].develop_cards['Caballeros']--
+    game.players[i].used_knights++
+    // Updating the robber
+    game.board.robber_biome = robber_biome
+
+    Object.values(game.board.nodes).forEach((node) => {
+        let biomes_set = new Set(node.biomes)
+        if (biomes_set.has(robber_biome) && (node.building != null && node.building.player != player)) {
+            let victim = game.players.findIndex(curr_player => curr_player.name === node.building.player)
+            let total_resources   = Object.values(game.players[victim].resources).reduce((total, num) => {
+                return total + num;
+            }, 0)
+            let selected_resource = Math.floor(Math.random() * total_resources)
+            if (selected_resource < game.players[victim].resources['Trigo']) {
+                game.players[i].resources['Trigo']++
+                game.players[victim].resources['Trigo']--
+            } else if (selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'])) {
+                game.players[i].resources['Madera']++
+                game.players[victim].resources['Madera']--
+            } else if (selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'])) {
+                game.players[i].resources['Ladrillo']++
+                game.players[victim].resources['Ladrillo']--
+            } else if (selected_resource < (game.players[victim].resources['Trigo'] + game.players[victim].resources['Madera'] + game.players[victim].resources['Ladrillo'] + game.players[victim].resources['Piedra'])) {
+                game.players[i].resources['Piedra']++
+                game.players[victim].resources['Piedra']--
+            } else {
+                game.players[i].resources['Lana']++
+                game.players[victim].resources['Lana']--
+            }
+        }
+    })
+    update_actions_with_cost(game)
+}
+
+
 // ============================================================================
 // SIGUIENTES FUNCIONES A LIMPIAR
 // ============================================================================
-function use_knight(game, player, robber_biome) {
 
-    let i = game.players.findIndex(curr_player => curr_player.name === player) 
-
-
-    let index = game.players.findIndex(player => player.id === id)
-    game.players[index].develop_cards.Caballeros--
-    game.players[index].develop_cards.Caballeros_usados++
-    game.board.thief_biome=hexagon
-    let index2 = game.players.findIndex(player => player.id === idPlayer)
-
-    let randomNumber = Math.floor(Math.random() * total_resources(idPlayer));
-
-    if(randomNumber < game.players[index2].resources['Grano']){//Coloca caballero
-        game.players[index2].resources['Grano']--;
-        game.players[index].resources['Grano']++;
-    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera'])){//Coloca Carreteras
-        game.players[index2].resources['Madera']--;
-        game.players[index].resources['Madera']++;
-    }else if(randomNumber <  (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo'])){//Coloca Monopolio
-        game.players[index2].resources['Ladrillo']--;
-        game.players[index].resources['Ladrillo']++;
-    }else if(randomNumber < (game.players[index2].resources['Grano']+game.players[index2].resources['Madera']+game.players[index2].resources['Ladrillo']+game.players[index2].resources['Piedra'])){//Coloca Descubrimiento
-        game.players[index2].resources['Piedra']--;
-        game.players[index].resources['Piedra']++;
-    }else { 
-        game.players[index2].resources['Lana']--;
-        game.players[index].resources['Lana']++;
-    }
-}
 
 // ============================================================================
 // CODIGO A LIMPIAR
@@ -836,7 +857,6 @@ function getMoves(id, game){
     }
 }
 
-ids   = ["Jkilo90o", "XXXZ89xx", "45TRej23", "5ty62sw1"]
 function barajar_desarrollos(game) {
     let randomNumber = 0;
     let numCards = 25;
@@ -919,49 +939,7 @@ function roads_points(game, id){//TODO: Version 1.0
     }
 }
 
-// ============================================================================
-// SIMULACION
-// ============================================================================
-function start_game(game) {
-    game.board = create_board()
-    console.log('tablero creado')
-    for (let i = 0; i < game.players.length; i++) {
-        game.players[i].free_nodes = new Set(Object.keys(game.board.nodes))
-        game.players[i].resources  = { 
-            Trigo: 0,
-            Madera: 0,
-            Ladrillo: 0,
-            Piedra: 0,
-            Lana: 0
-        }
-        game.players[i].develop_cards = { 
-            Caballero: 0,
-            Carreteras: 0,
-            Descubrimiento: 0,
-            Monopolio: 0,
-            Punto: 0
-        }
-    }
-    barajar_desarrollos(game)
-}
 
-function order_selection(game, order_selection_rolls) {
-    game.players.sort(function(a,b) {
-        let fst_roll = order_selection_rolls[game.players.indexOf(a)];
-        let snd_roll = order_selection_rolls[game.players.indexOf(b)];
-        if (fst_roll == snd_roll) {
-            return random(1,2);
-        } else {
-            return snd_roll - fst_roll;
-        }
-    });
-    game.current_turn = 0
-    game.phase = 1
-}
-
-
-
-// game_simulation()
 module.exports = {
     // De momento estos estan limpiados:
     create_game,
@@ -977,7 +955,6 @@ module.exports = {
     monopoly,
     discovery,
     change_recourse,
-    start_game,
     getMoves,
     barajar_desarrollos
 }
