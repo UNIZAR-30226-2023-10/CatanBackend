@@ -224,7 +224,7 @@ function create_board() {
         }
     }
     return {
-        biomes: shuffle(shuffled_biomes),
+        biomes: shuffled_biomes,
         robber_biome: -1,
         nodes: nodes,
         roads: edges,
@@ -814,7 +814,6 @@ function use_knight(game, player, robber_biome) {
     })
     update_actions_with_cost(game)
 }
-
 
 // ============================================================================
 // SIGUIENTES FUNCIONES A LIMPIAR
