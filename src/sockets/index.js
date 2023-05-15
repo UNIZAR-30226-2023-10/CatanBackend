@@ -153,12 +153,12 @@ const Socket = {
                 socket.emit('error','invalid_token')
             }
             else {
-                token.data.user = decoded.id
+                socket.user = decoded.id
                 // buscamos la partida
                 let partida = await GamesModel.findOne({
                     codigo_partida: codigo_partida
                 })
-
+                console.log(codigo_partida);
                 if (!partida.jugadores.includes(decoded.id)){
                     socket.emit('error', 'You aren\'t player of this game')
                    return
@@ -190,8 +190,8 @@ const Socket = {
         })
     },
     async disconnect(socket){
-         if (socket.data.user){
-            let user = UserModel.findById(socket.data.user)
+         if (socket.user){
+            let user = UserModel.findById(socket.user)
 
             if (user.partidas.length === 0){
                 return
