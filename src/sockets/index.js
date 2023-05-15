@@ -217,7 +217,7 @@ const Socket = {
             // enlazar el socket con la partida
             console.log('nuevo socket abierto: ', socket.rooms)
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
-            socket.on("disconnect", () => console.log('socket cerrado'))  
+            socket.on("disconnect", (socket) => this.disconnect(socket))  
             socket.on('move', (token, codigo_partida, move) => {
                 this.move(socket, token, codigo_partida, move)
             })
