@@ -313,6 +313,11 @@ function create_game(code, players) {
             villages: [],
             cities: [],
             roads: [],
+            buildings: {
+                'Villages': 5,
+                'Cities': 4,
+                'Roads': 15
+            },
             resources: {
                 'Trigo': 10,
                 'Madera': 10,
@@ -354,8 +359,9 @@ function build_city(game, player, ncoor) {
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     game.board.nodes[ncoor].building.type = 'City'
 
-    // Taking the needed resources: De momento gratis, que tenemos que debugearlo.
+    // Taking the needed resources:
     // - Poblado: 1, Trigo: 2, Piedra: 3
+    game.players[i].buildings['Cities']--
     game.players[i].resources['Trigo']  -= 2
     game.players[i].resources['Piedra'] -= 3
     update_actions_with_cost(game)
@@ -387,6 +393,7 @@ function build_road(game, player, rcoor, free_road = false) {
 
     // Taking the needed resources:
     // - Madera: 1, Ladrillo: 1
+    game.players[i].buildings['Roads']--
     if (game.phase === 3 && !free_road) {
         game.players[i].resources['Madera']--
         game.players[i].resources['Ladrillo']--
@@ -511,6 +518,7 @@ function build_village(game, player, ncoor) {
 
     // Taking the needed resources:
     // - Trigo: 1, Madera: 1, Ladrillo: 1, Lana: 1
+    game.players[i].buildings['Villages']--
     if (game.phase === 3) {
         game.players[i].resources['Trigo']--
         game.players[i].resources['Madera']--
@@ -726,21 +734,22 @@ function roll_the_dices(game) {
             }
         }
     } else {
-        for (let p of game.players) {
-            let resources = Object.values(p.resources).reduce((total, num) => {
-                return total + num;
-            }, 0);
-            if (resources > 7) {
-                let nresources = Object.keys(p.resources).length
-                for (let i = resources/2; i > 0; i++) {
-                    let kill_resource = biomesResources[random(0, nresources)]
-                    while (p.resources[kill_resource] == 0) {
-                        kill_resource = biomesResources[random(0, nresources)]
-                    }
-                    p.resources[kill_resource]--
-                }
-            }
-        }
+        console.log("Ha salido 7")
+        //for (let p of game.players) {
+        //    let resources = Object.values(p.resources).reduce((total, num) => {
+        //        return total + num;
+        //    }, 0);
+        //    if (resources > 7) {
+        //        let nresources = Object.keys(p.resources).length
+        //        for (let i = resources/2; i > 0; i++) {
+        //            let kill_resource = biomesResources[random(0, nresources)]
+        //            while (p.resources[kill_resource] == 0) {
+        //                kill_resource = biomesResources[random(0, nresources)]
+        //            }
+        //            p.resources[kill_resource]--
+        //        }
+        //    }
+        //}
     }
     update_actions_with_cost(game)
 }
@@ -754,19 +763,19 @@ function roll_the_dices(game) {
 function update_actions_with_cost(game) {
     for (let p of game.players) {
         // Village
-        if (p.resources['Trigo'] > 0 && p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0 && p.resources['Lana']) {
+        if (p.buildings['Villages'] > 0 && p.resources['Trigo'] > 0 && p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0 && p.resources['Lana']) {
             p.can_build[0] = true
         } else {
             p.can_build[0] = false
         }
         // City
-        if (p.villages.length > 0 && p.resources['Trigo'] > 1 && p.resources['Piedra'] > 2) {
+        if (p.buildings['Cities'] > 0 && p.villages.length > 0 && p.resources['Trigo'] > 1 && p.resources['Piedra'] > 2) {
             p.can_build[1] = true
         } else {
             p.can_build[1] = false
         }
         // Road
-        if (p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0) {
+        if (p.buildings['Roads'] > 0 && p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0) {
             p.can_build[2] = true
         } else {
             p.can_build[2] = false
@@ -792,7 +801,9 @@ function use_knight(game, player, robber_biome) {
     let i = game.players.findIndex(curr_player => curr_player.name === player)
 
     // Updating the knight
-    game.players[i].develop_cards['Caballeros']--
+    if ((game.dices_res[0] + game.dices_res[1]) !== 7) {
+        game.players[i].develop_cards['Caballeros']--
+    }
     game.players[i].used_knights++
     // Updating the robber
     game.board.robber_biome = robber_biome
@@ -870,6 +881,7 @@ function use_monopoly(game, player, resource) {
     }
     // Se le asigna todos los recursos al jugador que ha jugado el monopolio 
     game.players[i].resources[resource] = total_resource  
+    update_actions_with_cost(game)
 }
 
 /**
@@ -900,6 +912,7 @@ function use_year_of_plenty(game, player, resources) {
     game.players[i].develop_cards.Descubrimientos--
     game.players[i].resources[resources[0]]++
     game.players[i].resources[resources[1]]++
+    update_actions_with_cost(game)
 }
 
 // ============================================================================
