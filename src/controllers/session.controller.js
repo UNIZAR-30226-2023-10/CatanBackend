@@ -37,6 +37,7 @@ const Session = {
                     username: user.username,
                     email: user.email,
                     accessToken: token,
+                    partidas: user.partidas
                 })
             })
         } catch (err) {
