@@ -5,7 +5,8 @@ const { create_game } = require('../catan/catan')
 const Socket = require('../sockets/index')
 const UserModel = require('../models/user.model')
 const User = require('./user.controller')
-// TODO : importar jugabilidad
+
+// TODO : importar jugabilidad 
 // const CatanModule = require() 
 const max = 999999
 const min = 100000
@@ -145,7 +146,7 @@ const Game = {
                     for (id of game.jugadores) {
                         let player = await UserModel.findById(id)
                         players_names.push(player.username)
-                        player.partidas.push(codigo_partida)
+                        player.partidas.push(game.codigo_partida)
                         await player.save()
                         
                     }
@@ -171,7 +172,7 @@ const Game = {
             }
 
         }
-        catch(e){
+        catch(err){
             res.status(500).json(err)
             console.error(err)
         }
