@@ -78,7 +78,7 @@ const User = {
                     from: 'catanrecoveryservice@gmail.com',
                     to: user.email,
                     subject: 'Change Password',
-                    text: 'hola?token=${token}'// `click on this URL : ${changeURL}?token=${token}`
+                    text: `<href>localhost:3000/recover?token=${token}</href>`// `click on this URL : ${changeURL}?token=${token}`
                 };
                 console.log("Encontrado usuario para cambiar su contraseña");
                 transporter.sendMail(mailOptions, function(error, info){
