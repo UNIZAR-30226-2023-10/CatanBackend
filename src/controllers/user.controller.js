@@ -15,7 +15,23 @@ const transporter = nodemailer.createTransport({
       pass: 'csimbjjquadfoebm'
     }
   });
-
+function createEmail(username,token){
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Recuperacion de contrasenya</title>
+    </head>
+    <body>
+        <h1>¡Hola${username}!</h1>
+        <p>Aquí está el enlace para cambiar la contrasenya:</p>
+        <p><a href="localhost:3000/recover?token=${token}">Enlace</a></p>
+        <p>Saludos,</p>
+        <p>Nombre</p>
+    </body>
+    </html>`
+}
 const User = {
 
     async create(req, res) {       
@@ -78,7 +94,7 @@ const User = {
                     from: 'catanrecoveryservice@gmail.com',
                     to: user.email,
                     subject: 'Change Password',
-                    text: `<href>localhost:3000/recover?token=${token}</href>`// `click on this URL : ${changeURL}?token=${token}`
+                    text: createEmail(user.username,token)// `click on this URL : ${changeURL}?token=${token}`
                 };
                 console.log("Encontrado usuario para cambiar su contraseña");
                 transporter.sendMail(mailOptions, function(error, info){
