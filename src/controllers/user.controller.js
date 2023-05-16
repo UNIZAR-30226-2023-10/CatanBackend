@@ -97,7 +97,7 @@ const User = {
                       // do something useful
                     }
                   });
-                return res.status(200).json(user);
+                return res.status(200).json();
             } else {
                 console.log('Usuario no encontrado');
                 return res.status(300);
@@ -118,10 +118,10 @@ const User = {
             }
             try{
                 me = await me.save() 
-                let me2 = await UserModel.findOne(
+                me = await UserModel.findOne(
                     { _id : res.locals.decoded.id }
                 )
-                return res.status(200).json(me2);
+                return res.status(200).json(me);
             }catch(e){
                 return res.status(300).json({
                     error : 'parametros no validos'
