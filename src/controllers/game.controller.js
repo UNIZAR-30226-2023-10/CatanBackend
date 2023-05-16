@@ -146,9 +146,8 @@ const Game = {
                     for (id of game.jugadores) {
                         let player = await UserModel.findById(id)
                         players_names.push(player.username)
-                        player.partidas.push(game.codigo_partida)
-                        await player.save()
-                        
+                        player.partidaActual = game.codigo_partida
+                        player = await player.save()    
                     }
                     game.game = create_game(game.codigo_partida, players_names)
                     game.comenzada = true 

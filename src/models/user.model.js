@@ -22,8 +22,8 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    partidas:  {
-        type: [Number],
+    partidaActual:  {
+        type: Number,
     }
 })
 
