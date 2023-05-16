@@ -116,6 +116,12 @@ const Socket = {
                     codigo_partida: codigo_partida
                 })
 
+                if(!partida) {
+                    socket.emit('error','partida no existente')
+                    console.log("error al encontrar partida")
+                    return
+                }
+
                 //comprobamos que se el jugador se encuentre la partida
                 if (!partida.jugadores.includes(decoded.id)){
                     socket.emit('error', 'You aren\'t player of this game')
@@ -133,8 +139,8 @@ const Socket = {
                     }
                     // si se otro lo eliminamos de la sala de espera
                     else{
-
-                        partida.jugadores = partida.filter(user => user != decoded.id)
+                        console.log(partida.jugadores)
+                        partida.jugadores = partida.jugadores.filter(user => user != decoded.id)
                         await partida.save()
                         this.sockets.to(`${codigo_partida}`).emit('delete_player', user.username )
                     }
@@ -154,6 +160,10 @@ const Socket = {
             }
             else {
                 socket.user = decoded.id
+                if (!codigo_partida){
+                    socket.emit('error','invalid_token')
+                    return 
+                }
                 // buscamos la partida
                 let partida = await GamesModel.findOne({
                     codigo_partida: codigo_partida
@@ -193,11 +203,11 @@ const Socket = {
          if (socket.user){
             let user = UserModel.findById(socket.user)
 
-            if (user.partidas.length === 0){
+            if (user.partidas.length === 0){    
                 return
             }
 
-            for(partida in user.partida){
+            for(partida of user.partida){
                 this.sockets.to(`${partida}`).emit('wait_reconect',user.username)
             }
          }

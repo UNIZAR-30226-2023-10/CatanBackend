@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const pass = 'tomyrRHX2Y4xQAG9'
 const dbname = 'test' // "prod"
-const uri = `mongodb+srv://admin:admin@clustercatan.yixy5xm.mongodb.net/?retryWrites=true&w=majority`
+const uri = `mongodb+srv://CatanBackend:${pass}@catan.xu0dyxe.mongodb.net/${dbname}?`
 const users = require('./user.model.js')
 const games = require('./game.model.js')
 
