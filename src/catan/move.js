@@ -5,6 +5,7 @@ const  {
     build_road,
     build_village,
     buy_cards,
+    change_resource,
     next_turn,
     roll_the_dices,
     use_knight,
@@ -56,22 +57,12 @@ const CatanModule = {
         } else if (move.id === MoveType.use_year_of_plenty) {
             console.log("Using Year of plenty")
             use_year_of_plenty(game, player, move.resource)
+        } else if (move.id === MoveType.change_resource) {
+            console.log("Change resource")
+            change_resource(game, player, move.resource)
         } else {
             console.log('Unknown move')
         }
-
-        /*switch(move.id) {            
-            case MoveType.order_selection:
-                console.log("order_selection")
-                order_selection(game,id);
-                break;
-
-            case MoveType.change_recourse:
-                console.log("change_recourse")
-                change_recourse(game,id,resource, resource2);
-                break;
-        }
-        */
         return game
     },
 }

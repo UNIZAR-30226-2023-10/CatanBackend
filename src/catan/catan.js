@@ -228,19 +228,10 @@ function create_board() {
         robber_biome: -1,
         nodes: nodes,
         roads: edges,
-        //buildings: new Set(),
-        //growth_cards: {
-        //    Caballeros: 14,
-        //    Carreteras: 2,
-        //    Monopolios: 2,
-        //    Descubrimientos: 2,
-        //    Punto: 5
-        //},
-        //cartasDesarrollo: [],
-        //max_knights: 2,
-        //player_max_knights: -1,
-        //max_roads: 4,
-        //player_max_roads: -1,
+        max_knights: 2,
+        player_max_knights: 0,
+        max_roads: 4,
+        player_max_roads: 0,
     }
 }
 
@@ -258,6 +249,7 @@ function create_board() {
 //   TOTAL                          25
 const nDevelopCards     = 25
 const developCardsNames = ['Caballeros', 'Carreteras', 'Descubrimiento', 'Monopolio', 'Biblioteca', 'Capilla', 'Palacio', 'Mercado', 'Universidad']
+const puntosNames       = ['Capilla','Biblioteca','Mercado','Palacio','Universidad']
 const developCardsQuant = [14, 2, 2, 2, 1, 1, 1, 1, 1]
 const developCardsProbs = developCardsQuant.map(x => x / nDevelopCards);
 
@@ -298,6 +290,7 @@ function create_game(code, players) {
         develop_cards: create_development_deck(),
                           // Baraja de cartas de desarrollo
         dices_res: [0,0], // Tirada del turno actual
+        winner: 0,
         phase: 1,         // Indica el estado de la partida:
                           // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego (sin implementar).
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
@@ -340,7 +333,21 @@ function create_game(code, players) {
             can_buy: false,
             used_knights: 0,
             force_knight: false,
-            roads_build_4_free: 0
+            roads_build_4_free: 0, 
+            used_develop_cards: 0,
+            harbors: {
+                'Trigo': false,
+                'Madera': false,
+                'Ladrillo': false,
+                'Piedra': false,
+                'Lana': false,
+                'Puerto Norte': false,
+                'Puerto Este': false,
+                'Puerto Sur': false,
+                'Puerto Oeste': false
+            },
+            can_change: [false, false, false, false, false],
+            trade_costs: [4,4,4,4,4]
         })
     }
     console.log('Tablero creado')
@@ -525,8 +532,47 @@ function build_village(game, player, ncoor) {
         game.players[i].resources['Madera']--
         game.players[i].resources['Ladrillo']--
         game.players[i].resources['Lana']--
-        update_actions_with_cost(game)
     }
+
+    // Updating player harbors
+    if (ncoor === '0,5' || ncoor === '1,6') {
+        game.players[i].harbors['Trigo'] = true
+        game.players[i].trade_costs[0] = 2
+    } else if (ncoor === '3,1' || ncoor === '4,1') {
+        game.players[i].harbors['Madera'] = true
+        game.players[i].trade_costs[1] = 2
+    } else if (ncoor === '7,1' || ncoor === '8,1') {
+        game.players[i].harbors['Ladrillo'] = true
+        game.players[i].trade_costs[2] = 2
+    } else if (ncoor === '2,8' || ncoor === '3,9') {
+        game.players[i].harbors['Piedra'] = true
+        game.players[i].trade_costs[3] = 2
+    } else if (ncoor === '8,9' || ncoor === '9,8') {
+        game.players[i].harbors['Lana'] = true
+        game.players[i].trade_costs[4] = 2
+    } else if (ncoor === '0,3' || ncoor === '1,2') {
+        game.players[i].harbors['Puerto Norte'] = true
+        for (let j = 0; j < 5; j++) {
+            game.players[i].trade_costs[j] = Math.min(game.players[i].trade_costs[j], 3)
+        }
+    } else if (ncoor === '5,10' || ncoor === '6,10') {
+        game.players[i].harbors['Puerto Este'] = true
+        for (let j = 0; j < 5; j++) {
+            game.players[i].trade_costs[j] = Math.min(game.players[i].trade_costs[j], 3)
+        }
+    } else if (ncoor === '10,6' || ncoor === '11,5') {
+        game.players[i].harbors['Puerto Sur'] = true
+        for (let j = 0; j < 5; j++) {
+            game.players[i].trade_costs[j] = Math.min(game.players[i].trade_costs[j], 3)
+        }
+    } else if (ncoor === '10,2' || ncoor === '11,3') {
+        game.players[i].harbors['Puerto Oeste'] = true
+        for (let j = 0; j < 5; j++) {
+            game.players[i].trade_costs[j] = Math.min(game.players[i].trade_costs[j], 3)
+        }
+    }
+    update_actions_with_cost(game)
+
 
     // Adding the new village:
     let villages_set = (game.players[i].villages.length > 0) ? new Set(game.players[i].villages) : new Set()
@@ -659,6 +705,23 @@ function buy_cards(game, player) {
 }
 
 /**
+ * 
+ * @param {*} game 
+ * @param {*} player 
+ * @param {*} resource 
+ */
+function change_resource(game, player, resource) {  //resource -> recurso que quiero ||resource2 -> recurso por el que cambio
+    
+    let i   = game.players.findIndex(curr_player => curr_player.name === player)
+    let r_i = biomesResources.findIndex(curr_resource => curr_resource === resource[0])
+    
+    // En el frontend solo deben dar opciones de cambio si tiene 4 o mas del recurso que cambia
+    game.players[i].resources[resource[0]] -= game.players[i].trade_costs[r_i]        
+    game.players[i].resources[resource[1]]++
+    update_actions_with_cost(game)
+}
+
+/**
  * Funcion para cambiar de turno.
  */
 function next_turn(game, player) {
@@ -694,11 +757,12 @@ function next_turn(game, player) {
                 game.phase = 3
             }
         } else {
-            //if(win_check){
-            //    console.log(`The winner is player ${game.players[game.current_turn].id}`)
-            //}else{
+            if (win_check(game, player)) {
+                game.phase  = 4
+                game.winner = game.players[game.current_turn].name
+            } else {
                 game.current_turn = (game.current_turn+1)%(game.players.length)
-            //}
+            }
         }
     }
 }
@@ -766,6 +830,7 @@ function roll_the_dices(game, player) {
  */
 function update_actions_with_cost(game) {
     for (let p of game.players) {
+
         // Village
         if (p.buildings['Villages'] > 0 && p.resources['Trigo'] > 0 && p.resources['Madera'] > 0 && p.resources['Ladrillo'] > 0 && p.resources['Lana']) {
             p.can_build[0] = true
@@ -789,6 +854,15 @@ function update_actions_with_cost(game) {
             p.can_buy = true
         } else {
             p.can_buy = false
+        }
+
+        // Trade costs
+        for (let i = 0; i < biomesResources.length-1; i++) {
+            if (p.resources[biomesResources[i]] >= p.trade_costs[i]) {
+                p.can_change[i] = true
+            } else {
+                p.can_change[i] = false
+            }
         }
     }
 }
@@ -873,9 +947,6 @@ function use_knight(game, player, robber_biome) {
  * @param {*} resource 
  */
 function use_monopoly(game, player, resource) {
-
-
-    console.log(resource)
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     game.players[i].develop_cards['Monopolios']--
 
@@ -896,10 +967,8 @@ function use_monopoly(game, player, resource) {
  * @param {*} player 
  */
 function use_roads_build_4_free(game, player) {
-
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     game.players[i].roads_build_4_free++
-    console.log(`Ha construido ${game.players[i].roads_build_4_free } carreteras gratis`)
     if (game.players[i].roads_build_4_free === 1) {
         game.players[i].develop_cards['Carreteras']--
     } else if (game.players[i].roads_build_4_free === 2) {
@@ -921,76 +990,47 @@ function use_year_of_plenty(game, player, resources) {
     update_actions_with_cost(game)
 }
 
-// ============================================================================
-// SIGUIENTES FUNCIONES A LIMPIAR
-// ============================================================================
 
-// ============================================================================
-// CODIGO A LIMPIAR
-// ============================================================================
-function barajar_desarrollos(game) {
-    let randomNumber = 0;
-    let numCards = 25;
-    for(let i = 0; i < 25; i++){
-        randomNumber = Math.floor(Math.random() * numCards);
-        numCards--;
-        if(randomNumber < game.board.develop_cards.Caballero){//Coloca caballero
-            game.board.develop_cards.Caballero--;
-            game.board.cartasDesarrollo.push('Caballero');
-        }else if(randomNumber < (game.board.develop_cards.Caballero+ game.board.develop_cards.Carreteras)){//Coloca Carreteras
-            game.board.develop_cards.Carreteras--;
-            game.board.cartasDesarrollo.push('Carreteras');
-        }else if(randomNumber < (game.board.develop_cards.Caballero+ game.board.develop_cards.Carreteras+game.board.develop_cards.Monopolio)){//Coloca Monopolio
-            game.board.develop_cards.Monopolio--;
-            game.board.cartasDesarrollo.push('Monopolio');
-        }else if(randomNumber < (game.board.develop_cards.Caballero+ game.board.develop_cards.Carreteras+game.board.develop_cards.Monopolio+game.board.develop_cards.Descubrimiento)){//Coloca Descubrimiento
-            game.board.develop_cards.Descubrimiento--;
-            game.board.cartasDesarrollo.push('Descubrimiento');
-        }else { //Coloca Punto
-            game.board.develop_cards.Punto--;
-            game.board.cartasDesarrollo.push('Punto');
-        }
-    }
-}
-
-
-function change_recourse (game, id, resource, resource2) {  //resource -> recurso que quiero ||resource2 -> recurso por el que cambio
-    let index = game.players.findIndex(player => player.id === id)
-    game.players[index].resources[resource2] -= 4          //En el frontend solo deben dar opciones de cambio si tiene 4 o mas del recurso que cambia
-    game.players[index].resources[resource]++
-}
-
-function win_check(game, id){//faltan los puntos por objetos
-    let index = game.players.findIndex(player => player.id === id)
-    let puntos = game.players[index].villages.size + 2*(game.players[index].cities.size)+ game.players[index].develop_cards.Puntos
-    knights_points(game,id)
-    if(id==game.board.player_max_knights){
-        puntos += 2
-    }
-    roads_points(game,id)
-    if(id==game.board.player_max_roads){
-        puntos += 2
-    }
-    if(puntos >= 10){
-        console.log('< La partida finalizo >')
-    }
-    return puntos >= 10
-}
-
-function knights_points(game, id){
-    let index = game.players.findIndex(player => player.id === id)
+// Win functions:
+function knights_points(game, player){
+    let index = game.players.findIndex(curr_player => curr_player.name === player)
     if(game.players[index].used_knights > game.board.max_knights){
         game.board.max_knights = game.players[index].used_knights
-        game.board.player_max_knights = id
+        game.board.player_max_knights = player.name
     }
 }
 
-function roads_points(game, id){//TODO: Version 1.0
-    let index = game.players.findIndex(player => player.id === id)
-    if(game.players[index].roads.size > game.board.max_roads){
-        game.board.max_roads =game.players[index].roads.size
-        game.board.player_max_roads = id
+function roads_points(game, player) {
+    let index = game.players.findIndex(curr_player => curr_player.name === player)
+    console.log('game.players[index].roads: ',game.players[index].roads.length)
+    if(game.players[index].roads.length > game.board.max_roads){
+        game.board.max_roads =game.players[index].roads.length
+        game.board.player_max_roads = player.name
     }
+}
+
+/**
+ * 
+ * @param {*} game 
+ * @param {*} player 
+ * @returns 
+ */
+function win_check(game, player){
+    let index = game.players.findIndex(curr_player => curr_player.name === player)
+    let puntos = 0
+    for (let i = 0; i < 5; i++) { 
+        puntos += game.players[index].develop_cards[puntosNames[i]]
+    }
+    puntos = game.players[index].villages.length + 2*(game.players[index].cities.length)
+    knights_points(game,player)
+    if (player.name==game.board.player_max_knights) {
+        puntos += 2
+    }
+    roads_points(game,player)
+    if (player.name==game.board.player_max_roads) {
+        puntos += 2
+    }
+    return puntos >= 10
 }
 
 module.exports = {
@@ -999,6 +1039,7 @@ module.exports = {
     build_road,
     build_village,
     buy_cards,
+    change_resource,
     next_turn,
     roll_the_dices,
     use_knight,
