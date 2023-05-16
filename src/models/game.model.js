@@ -27,11 +27,6 @@ const GameSchema = mongoose.Schema({
     },
     chat : {
         type : [Object]
-    },
-    desconectados : {
-        type: [String]
-        // type: [mongoose.Schema.ObjectId],
-        // ref: 'User',
     }
 })
 

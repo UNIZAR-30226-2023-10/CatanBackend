@@ -8,13 +8,16 @@ const User = require("../controllers/user.controller");
 const UserModel = require("../models/user.model");
 const CatanModule = require("../catan/move");
 
+const { notify } = require("../routes");
+
+
 const Game = require("../controllers/game.controller");
 const GameModel = require("../models/game.model");
+
 
 const socketData = {}
 const Socket = {   
     async move(socket, token, codigo_partida, move){ 
-        console.log(socket.data.user)
         try{ 
             jwt.verify(token, jwt_secret, async (err, decoded) => {
                 if (err) {
@@ -63,7 +66,6 @@ const Socket = {
         }
         
     },
-
     async msg (socket, token, codigo_partida, msg){
 
         jwt.verify(token, jwt_secret, async (err, decoded) => {
@@ -102,6 +104,7 @@ const Socket = {
             }
         })
     },
+
 
     async unjoin(socket, token, codigo_partida){
         jwt.verify(token, jwt_secret, async (err, decoded) => {
@@ -149,6 +152,7 @@ const Socket = {
         })
 
     },
+
     async joinGame(socket, token, codigo_partida){
         // verificamos el token
         jwt.verify(token, jwt_secret, async (err, decoded) => {
@@ -157,14 +161,17 @@ const Socket = {
                 socket.emit('error','invalid_token')
             }
             else {
+
                 if (!codigo_partida){
                     socket.emit('error','invalid_token')
                     return 
                 }
+
                 // buscamos la partida
                 let partida = await GameModel.findOne({
                     codigo_partida: codigo_partida
                 })
+
                 if (!partida.jugadores.includes(decoded.id)){
                     socket.emit('error', 'You aren\'t player of this game')
                    return
@@ -175,16 +182,15 @@ const Socket = {
                 // anyadimos el socket a las salas correspondientes
                 socket.join(`${decoded.id}_${codigo_partida}`)
                 socket.join(`${codigo_partida}`)
-                
 
                 //anyadimos las funcionales de move y msg
                 //socket.on('move', (token, codigo_partida, move) => {
                 //    this.move(socket, token, codigo_partida, move)
                 //})  
                 socket.on('msg',  (token, codigo_partida, msg) => this.msg (socket, token, codigo_partida, msg))
-                socket.on('unjoin', (token, codigo_partida) => this.unjoin(socket, token, codigo_partida))
- 
+
                 //si ya esta comenzada se necesita una reconexion 
+
                 if (partida.comenzada){
                     if (partida.desconectados.includes(decoded.id)){
                         partida.desconectados = partida.desconectados.filter(user => user != decoded.id )
@@ -216,6 +222,7 @@ const Socket = {
                
         delete socketData[socket.id]
     },
+
     
     async start(server){
         //iniciamos el server de los sockets
@@ -233,10 +240,12 @@ const Socket = {
             socketData[id] = {}
             console.log('nuevo socket abierto: ', socket.rooms)
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
+
             socket.on("disconnect", (socket) => this.disconnect(socket,id))  
+
             socket.on('move', (token, codigo_partida, move) => {
                 this.move(socket, token, codigo_partida, move)
-            })
+            })   
         })
     }, 
 

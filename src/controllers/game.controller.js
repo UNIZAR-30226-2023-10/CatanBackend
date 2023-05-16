@@ -153,6 +153,7 @@ const Game = {
                     game.comenzada = true 
                     game.save()
 
+                    console.log('LA PARTIDA: ', game.game.players[0])
                     Socket.sendGame(game.codigo_partida, game.game)
                     return res.status(200).json({ 
                         status: 'success',
