@@ -347,7 +347,8 @@ function create_game(code, players) {
                 'Puerto Oeste': false
             },
             can_change: [false, false, false, false, false],
-            trade_costs: [4,4,4,4,4]
+            trade_costs: [4,4,4,4,4],
+            puntos : 0
         })
     }
     console.log('Tablero creado')
@@ -382,7 +383,7 @@ function build_city(game, player, ncoor) {
     let villages_set = (game.players[i].villages.length > 0) ? new Set(game.players[i].villages) : new Set()
     villages_set.delete(ncoor)
     game.players[i].villages = [...villages_set]
-
+    win_check(game,player)
 }
 
 /**
@@ -508,6 +509,7 @@ function build_road(game, player, rcoor, free_road = false) {
     }
     game.players[i].free_nodes = [...free_nodes_set]
     game.players[i].free_roads = [...free_roads_set]
+    win_check(game,player)
 }
 
 /**
@@ -674,6 +676,7 @@ function build_village(game, player, ncoor) {
         }
         game.players[p].free_nodes = [...free_nodes_set]
     }
+    win_check(game,player)
 }
 
 /**
@@ -761,7 +764,9 @@ function next_turn(game, player) {
                 game.phase  = 4
                 game.winner = game.players[game.current_turn].name
             } else {
+                game.players[game.current_turn].used_develop_cards = 0
                 game.current_turn = (game.current_turn+1)%(game.players.length)
+                
             }
         }
     }
@@ -882,6 +887,7 @@ function use_knight(game, player, robber_biome) {
     if (!game.players[i].force_knight) {
         game.players[i].develop_cards['Caballeros']--
         game.players[i].used_knights++
+        //game.players[i].used_develop_cards = 1
     } else {
         game.players[i].force_knight = false
     }
@@ -938,6 +944,7 @@ function use_knight(game, player, robber_biome) {
         }
     })
     update_actions_with_cost(game)
+    win_check(game,player)
 }
 
 /**
@@ -949,6 +956,7 @@ function use_knight(game, player, robber_biome) {
 function use_monopoly(game, player, resource) {
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     game.players[i].develop_cards['Monopolios']--
+    game.players[i].used_develop_cards = 1
 
     // Se quitan los recursos del recurso seleccionado a todos los jugadores
     let total_resource = 0
@@ -971,6 +979,7 @@ function use_roads_build_4_free(game, player) {
     game.players[i].roads_build_4_free++
     if (game.players[i].roads_build_4_free === 1) {
         game.players[i].develop_cards['Carreteras']--
+        game.players[i].used_develop_cards = 1
     } else if (game.players[i].roads_build_4_free === 2) {
         game.players[i].roads_build_4_free = 0
     }
@@ -985,6 +994,7 @@ function use_roads_build_4_free(game, player) {
 function use_year_of_plenty(game, player, resources) {
     let i = game.players.findIndex(curr_player => curr_player.name === player)
     game.players[i].develop_cards.Descubrimientos--
+    game.players[i].used_develop_cards = 1
     game.players[i].resources[resources[0]]++
     game.players[i].resources[resources[1]]++
     update_actions_with_cost(game)
@@ -994,19 +1004,25 @@ function use_year_of_plenty(game, player, resources) {
 // Win functions:
 function knights_points(game, player){
     let index = game.players.findIndex(curr_player => curr_player.name === player)
+    console.log('used_knights:', game.players[index].used_knights) 
+    console.log('max_knights:',game.board.max_knights)  
     if(game.players[index].used_knights > game.board.max_knights){
         game.board.max_knights = game.players[index].used_knights
-        game.board.player_max_knights = player.name
+        game.board.player_max_knights = game.players[index].name
     }
+    console.log('player_max_knights:',game.board.player_max_knights)  
 }
 
 function roads_points(game, player) {
     let index = game.players.findIndex(curr_player => curr_player.name === player)
     console.log('game.players[index].roads: ',game.players[index].roads.length)
+    console.log('max_roads:',game.board.max_roads)  
+    console.log('game.players[index].name',game.players[index].name)
     if(game.players[index].roads.length > game.board.max_roads){
         game.board.max_roads =game.players[index].roads.length
-        game.board.player_max_roads = player.name
+        game.board.player_max_roads = game.players[index].name
     }
+    console.log('player_max_roads :',game.board.player_max_knights)  
 }
 
 /**
@@ -1018,18 +1034,23 @@ function roads_points(game, player) {
 function win_check(game, player){
     let index = game.players.findIndex(curr_player => curr_player.name === player)
     let puntos = 0
-    for (let i = 0; i < 5; i++) { 
-        puntos += game.players[index].develop_cards[puntosNames[i]]
-    }
+    
     puntos = game.players[index].villages.length + 2*(game.players[index].cities.length)
     knights_points(game,player)
-    if (player.name==game.board.player_max_knights) {
+    if (game.players[index].name==game.board.player_max_knights) {
+        console.log('Tengo caballeros')
         puntos += 2
     }
     roads_points(game,player)
-    if (player.name==game.board.player_max_roads) {
+    if (game.players[index].name==game.board.player_max_roads) {
+        console.log('Tengo carreteras')
         puntos += 2
     }
+    game.players[index].puntos = puntos //Guardo todos los puntos salvo las cartas desarrollo de puntos 
+    for (let i = 0; i < 5; i++) { 
+        puntos += game.players[index].develop_cards[puntosNames[i]]
+    }
+    console.log('puntos: ',puntos)
     return puntos >= 10
 }
 
