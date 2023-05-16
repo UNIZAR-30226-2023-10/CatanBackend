@@ -73,17 +73,22 @@ const User = {
         try {
             const user = await UserModel.findOne({ email: req.body.email });
             if(user) {
-
                 var token = jwt.sign({ id: user._id }, jwt_secret)
                 const mailOptions = {
                     from: 'catanrecoveryservice@gmail.com',
                     to: user.email,
                     subject: 'Change Password',
-                    text: `click on this URL : ${changeURL}?token=${token}`
+                    text: 'hola?token=${token}'// `click on this URL : ${changeURL}?token=${token}`
                 };
-
                 console.log("Encontrado usuario para cambiar su contraseña");
-
+                transporter.sendMail(mailOptions, function(error, info){
+                    if (error) {
+                   console.log(error);
+                    } else {
+                      console.log('Email sent: ' + info.response);
+                      // do something useful
+                    }
+                  });
                 return res.status(200).json(user);
             } else {
                 console.log('Usuario no encontrado');
