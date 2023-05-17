@@ -168,7 +168,7 @@ const Game = {
             }
 
         }
-        catch(e){
+        catch(err){
             res.status(500).json(err)
             console.error(err)
         }

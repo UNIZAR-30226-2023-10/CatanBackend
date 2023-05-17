@@ -94,8 +94,8 @@ function create_board() {
 
     // Generar biomas:
     let new_biomes  = [...biomesQuant], shuffled_biomes = []
-    let tokens_start = biomesTokenStarts[random(0, biomesTokenStarts.length)], offset = 0
     let biomes_left = nBiomes
+    let offset = 0
 
     while (biomes_left > 0) {
         let selected_biome = Math.random()
@@ -106,7 +106,7 @@ function create_board() {
                     type: biomesNames[i],
                     resource: biomesResources[i],
                     token: (i !== 5) ? 
-                        {letter: biomesTokenLetter[((19-biomes_left)-offset+tokens_start)%18], value: biomesTokenValues[((19-biomes_left)-offset+tokens_start)%18]} :
+                        {letter: biomesTokenLetter[((19-biomes_left)-offset)%18], value: biomesTokenValues[((19-biomes_left)-offset)%18]} :
                         {letter: 'S', value: 0 }
                 })
                 if (i === 5) {
@@ -248,7 +248,7 @@ function create_board() {
 // --------------------------------------
 //   TOTAL                          25
 const nDevelopCards     = 25
-const developCardsNames = ['Caballeros', 'Carreteras', 'Descubrimiento', 'Monopolio', 'Biblioteca', 'Capilla', 'Palacio', 'Mercado', 'Universidad']
+const developCardsNames = ['Caballeros', 'Carreteras', 'Descubrimientos', 'Monopolios', 'Biblioteca', 'Capilla', 'Palacio', 'Mercado', 'Universidad']
 const puntosNames       = ['Capilla','Biblioteca','Mercado','Palacio','Universidad']
 const developCardsQuant = [14, 2, 2, 2, 1, 1, 1, 1, 1]
 const developCardsProbs = developCardsQuant.map(x => x / nDevelopCards);
@@ -290,8 +290,9 @@ function create_game(code, players) {
         develop_cards: create_development_deck(),
                           // Baraja de cartas de desarrollo
         dices_res: [0,0], // Tirada del turno actual
-        winner: 0,
-        phase: 1,         // Indica el estado de la partida:
+        winner: '1',        // Indica el ganador
+        changeTurn: 0,    // Indica cambio de turno
+        phase: 4,         // Indica el estado de la partida:
                           // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego (sin implementar).
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
                           // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
@@ -330,6 +331,12 @@ function create_game(code, players) {
                 'Palacio': 0,
                 'Universidad': 0,
             },
+            drawn_cards: {
+                'Caballeros': 0,
+                'Carreteras': 0,
+                'Monopolios': 0,
+                'Descubrimientos': 0
+            },
             can_buy: false,
             used_knights: 0,
             force_knight: false,
@@ -348,7 +355,8 @@ function create_game(code, players) {
             },
             can_change: [false, false, false, false, false],
             trade_costs: [4,4,4,4,4],
-            puntos: 0
+            puntos: 0,
+            first_rolls: [6,6]
         })
     }
     console.log('Tablero creado')
@@ -702,6 +710,12 @@ function buy_cards(game, player) {
     if (game.develop_cards.length > 0) {
         let card = game.develop_cards.shift()
         // Adding the new card to the player inventory
+        if (!puntosNames.includes(card)) {
+            console.log('card: ',card)
+            // Bloque de código que se ejecuta si el valor no está en el vector
+            game.players[i].drawn_cards[card]++
+          }
+          console.log('drawn_cards: ',game.players[i].drawn_cards)
         game.players[i].develop_cards[card]++
     } else {
         for (p of game.players) {
@@ -734,18 +748,56 @@ function next_turn(game, player) {
     // console.log("PHASE: ", game.phase, ", CURRENT TURN: ", game.current_turn)
     if (player === game.players[game.current_turn].name) {
         //Primera ronda, solo de construccion
-        if (game.phase === 1) {
+        let first_player = 0
+        if(game.phase === 0){
             if (game.current_turn !== game.players.length-1) {
                 game.current_turn++
             } else {
+                console.log("=========================== DE FASE 0 a FASE 1 ===========================")
+                // Change to the second phase (in this phase doesn't ocurr anything)
+                let max_first_rolls = 0
+                for(let i = 0; i < game.players.length; i++){
+                    if(game.players[i].first_rolls[0]+ game.players[i].first_rolls[1] >= max_first_rolls){
+                        
+                        if (game.players[i].first_rolls[0]+ game.players[i].first_rolls[1] === max_first_rolls){
+                            let randomNumber = Math.floor(Math.random() * (2 - 1 + 1)) + 1;
+                            if(randomNumber === 1){ //50% de probabilidad de empezar si empatan
+                                first_player = i
+                            } 
+                        }else{
+                            max_first_rolls = game.players[i].first_rolls[0]+ game.players[i].first_rolls[1] 
+                            first_player = i
+                        }
+                             
+                    }
+                }
+                game.current_turn = first_player
+                console.log(game.players)
+                console.log('current_turn: ', game.current_turn)
+                game.phase = 1
+
+            }
+        }else if (game.phase === 1) {
+            if (game.changeTurn < 3) {
+                game.current_turn = (game.current_turn+1)%(game.players.length)
+                game.changeTurn++
+                console.log('changeTurn: ', game.changeTurn)
+            } else {
                 console.log("=========================== DE FASE 1 a FASE 2 ===========================")
                 // Change to the second phase (in this phase doesn't ocurr anything)
+                console.log('current: ',game.current_turn )
                 game.phase = 2
+                game.changeTurn = 0
             }
         //Segunda ronda, solo contruccion. Recibe recursos por la contruccion de este ultimo poblado
         } else if (game.phase === 2) {
-            if (game.current_turn !== 0) {
-                game.current_turn--
+            if (game.changeTurn < 3){
+                game.changeTurn++
+                if (game.current_turn !== 0) {
+                    game.current_turn--
+                }else if(game.current_turn === 0){
+                    game.current_turn = 3
+                }
             } else {
                 console.log("=========================== DE FASE 2 a FASE 3 ===========================")
                 // Cleaning free nodes:
@@ -768,7 +820,13 @@ function next_turn(game, player) {
                 game.winner = game.players[game.current_turn].name
             } else {
                 game.players[game.current_turn].used_develop_cards = 0
+                console.log(game.players[game.current_turn].drawn_cards)
+                for(let i = 0; i < 4 ; i++){
+                    game.players[game.current_turn].drawn_cards[developCardsNames[i]] = 0
+                }
+                console.log(game.players[game.current_turn].drawn_cards)
                 game.current_turn = (game.current_turn+1)%(game.players.length)
+                
             }
         }
     }
@@ -788,45 +846,49 @@ function roll_the_dices(game, player) {
 
     game.dices_res = [random(1,6), random(1,6)]
     let res = game.dices_res[0] + game.dices_res[1]
-    if (res !== 7) {
-        for (let p of game.players) {
-            for (let v of p.villages) {
-                game.board.nodes[v].biomes.forEach((biome) => {
-                    if (game.board.biomes[biome].token.value === res && game.board.robber_biome !== biome) {
-                        p.resources[game.board.biomes[biome].resource]++
-                    }
-                })
+    if(game.phase === 3){
+        if (res !== 7) {
+            for (let p of game.players) {
+                for (let v of p.villages) {
+                    game.board.nodes[v].biomes.forEach((biome) => {
+                        if (game.board.biomes[biome].token.value === res && game.board.robber_biome !== biome) {
+                            p.resources[game.board.biomes[biome].resource]++
+                        }
+                    })
+                }
+                for (let c of p.cities) {
+                    game.board.nodes[c].biomes.forEach((biome) => {
+                        if (game.board.biomes[biome].token.value === res && game.board.robber_biome !== biome) {
+                            p.resources[game.board.biomes[biome].resource] += 2
+                        }
+                    })
+                }
             }
-            for (let c of p.cities) {
-                game.board.nodes[c].biomes.forEach((biome) => {
-                    if (game.board.biomes[biome].token.value === res && game.board.robber_biome !== biome) {
-                        p.resources[game.board.biomes[biome].resource] += 2
+        } else {
+            console.log("Ha salido 7")
+            let i = game.players.findIndex(curr_player => curr_player.name === player)
+            game.players[i].force_knight = true
+    
+            for (let p of game.players) {
+                let total_resources = Object.values(p.resources).reduce((total, num) => {
+                    return total + num
+                },0)
+                if (total_resources > 7) {
+                    for (let i = 0; i < total_resources/2; i++) {
+                        let kill_resource = biomesResources[random(0, 5)]
+                        while (p.resources[kill_resource] === 0) {
+                            kill_resource = biomesResources[random(0, 5)]
+                        }
+                        p.resources[kill_resource]--
+                        console.log(p.name, ':', p.resources)
                     }
-                })
-            }
-        }
-    } else {
-        console.log("Ha salido 7")
-        let i = game.players.findIndex(curr_player => curr_player.name === player)
-        game.players[i].force_knight = true
-
-        for (let p of game.players) {
-            let total_resources = Object.values(p.resources).reduce((total, num) => {
-                return total + num
-            },0)
-            if (total_resources > 7) {
-                for (let i = 0; i < total_resources/2; i++) {
-                    let kill_resource = biomesResources[random(0, 5)]
-                    while (p.resources[kill_resource] === 0) {
-                        kill_resource = biomesResources[random(0, 5)]
-                    }
-                    p.resources[kill_resource]--
-                    console.log(p.name, ':', p.resources)
                 }
             }
         }
+        update_actions_with_cost(game)
+    }else{
+        game.players[game.current_turn].first_rolls = game.dices_res
     }
-    update_actions_with_cost(game)
 }
 
 /**
@@ -1015,10 +1077,10 @@ function knights_points(game, player){
 
 function roads_points(game, player) {
     let index = game.players.findIndex(curr_player => curr_player.name === player)
-    console.log('game.players[index].roads: ',game.players[index].roads.length)
     if(game.players[index].roads.length > game.board.max_roads){
         game.board.max_roads = game.players[index].roads.length
         game.board.player_max_roads = player
+        //game.board.player_max_roads = game.players[index].name
     }
 }
 
