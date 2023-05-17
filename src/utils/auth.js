@@ -25,8 +25,8 @@ function verifyToken(req, res, next) {
             })
         }
         res.locals.decoded = decoded
+        next()
     })
-    next()
 }
 
 module.exports = {verifyToken }

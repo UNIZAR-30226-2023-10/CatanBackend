@@ -18,8 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 function createEmail(username,token){
-    return 
-    `<div>
+    return `<div>
         <h1>¡Hola ${username}!</h1>
             <p>Aquí está el enlace para cambiar la contrasenya:</p>
     <div><a href="http://localhost:3000/recover?token=${token}%22%3EHaz click aqui</a></div>
