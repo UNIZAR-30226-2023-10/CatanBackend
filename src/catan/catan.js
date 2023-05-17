@@ -951,7 +951,7 @@ function use_knight(game, player, robber_biome) {
     if (!game.players[i].force_knight) {
         game.players[i].develop_cards['Caballeros']--
         game.players[i].used_knights++
-        //game.players[i].used_develop_cards = 1
+        game.players[i].used_develop_cards = 1
     } else {
         game.players[i].force_knight = false
     }
