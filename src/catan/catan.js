@@ -955,6 +955,7 @@ function use_knight(game, player, robber_biome) {
     } else {
         game.players[i].force_knight = false
     }
+    
     // Updating the robber
     game.board.robber_biome = robber_biome
 
