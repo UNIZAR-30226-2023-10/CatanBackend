@@ -6,9 +6,11 @@ const GamesModel = require('../models/game.model')
 const router = Router()
 const AuthRouter = require('./auth.routes')
 const GameRouter = require('./game.routes')
+const UserRouter = require('./user.routes')
 
 router.use('/', AuthRouter)
 router.use('/game', verifyToken, GameRouter)
+router.use('/user', verifyToken, UserRouter)
 router.post('/test', async (req, res) => {   
 
     let codigoPartida = Math.floor(Math.random() * (90000 - 10000 + 1) +10000 )

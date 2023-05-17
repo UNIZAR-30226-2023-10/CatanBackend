@@ -1,6 +1,6 @@
 const io = require("socket.io");
-const UsersModel = require('../models/user.model')
-const GamesModel = require('../models/game.model')
+const GameModel = require("../models/game.model");
+const Game = require("../controllers/game.controller");
 // TODO: anyadir modulo de jugablidad
 // const CatanModule = require()
 const jwt_secret  = '123456'
@@ -9,6 +9,8 @@ const User = require("../controllers/user.controller");
 const UserModel = require("../models/user.model");
 const CatanModule = require("../catan/move");
 const { notify } = require("../routes");
+
+const socketData = {}
 
 const Socket = {   
     async move(socket, token, codigo_partida, move){ 
@@ -20,7 +22,7 @@ const Socket = {
                 }
                 else {
                     // buscamos la partida
-                    let partida = await GamesModel.findOne({
+                    let partida = await GameModel.findOne({
                         codigo_partida: codigo_partida
                     })
 
@@ -38,7 +40,7 @@ const Socket = {
                     //console.log(partida.game.current_turn, partida._id)
                     //console.log("-------------------")
                     let game = CatanModule.move(move, partida.game, (await UserModel.findById(decoded.id)).username)
-                    partida = await GamesModel.findOneAndUpdate(
+                    partida = await GameModel.findOneAndUpdate(
                         { codigo_partida: codigo_partida },
                         { game: game },
                         { new : true }
@@ -68,7 +70,7 @@ const Socket = {
             }
             else {
                 // buscamos la partida
-                let partida = await GamesModel.findOne({
+                let partida = await GameModel.findOne({
                     codigo_partida: codigo_partida
                 })
 
@@ -106,8 +108,14 @@ const Socket = {
                 socket.emit('error','invalid_token')
             }
             else {
+
+                if (!codigo_partida){
+                    socket.emit('error','invalid_token')
+                    return 
+                }
+
                 // buscamos la partida
-                let partida = await GamesModel.findOne({
+                let partida = await GameModel.findOne({
                     codigo_partida: codigo_partida
                 })
 
@@ -116,6 +124,7 @@ const Socket = {
                    return
                 }
                 console.log(decoded.id, " entra en la partida " , codigo_partida)
+                socketData[socket.id].user = decoded.id
                 // socket.emit('ok')
                 // anyadimos el socket a las salas correspondientes
                 socket.join(`${decoded.id}_${codigo_partida}`)
@@ -126,6 +135,21 @@ const Socket = {
                 //    this.move(socket, token, codigo_partida, move)
                 //})  
                 socket.on('msg',  (token, codigo_partida, msg) => this.msg (socket, token, codigo_partida, msg))
+                socket.on('unjoin', (token, codigo_partida) => this.unjoin(socket, token, codigo_partida))
+
+                if (partida.comenzada){
+                    if (partida.desconectados.includes(decoded.id)){
+                        partida.desconectados = partida.desconectados.filter(user => user != decoded.id )
+                        socket.emit('update', partida.game)
+                        for(jugador of partida.desconectados){
+                            let username = (await UserModel.findById(jugador)).username
+                            socket.emit('wait_reconnect', username )
+                        }
+                        await partida.save()
+                        let user = await UserModel.findById(decoded.id)
+                        this.sockets.to(`${codigo_partida}`).emit('reconnected', user.username)
+                    }
+                }
 
                 //si ya esta comenzada se necesita una reconexion 
                 //if (partida.comenzada){
@@ -146,15 +170,82 @@ const Socket = {
         })
         
         this.sockets.on("connection", (socket) => {
+            let id = socket.id
+            socketData[id] = {}
             // enlazar el socket con la partida
             console.log('nuevo socket abierto: ', socket.rooms)
             socket.on('joinGame',(token, codigo_partida)=> this.joinGame(socket,token, codigo_partida ))
-            socket.on("disconnect", () => console.log('socket cerrado'))  
+            socket.on("disconnect", (socket) => this.disconnect(socket, id)) 
             socket.on('move', (token, codigo_partida, move) => {
                 this.move(socket, token, codigo_partida, move)
             })   
         })
     }, 
+
+    async unjoin(socket, token, codigo_partida){
+        jwt.verify(token, jwt_secret, async (err, decoded) => {
+            if (err) {
+                console.log(err)
+                socket.emit('error','invalid_token')
+            }
+            else {
+                 // buscamos la partida
+                 let partida = await GameModel.findOne({
+                    codigo_partida: codigo_partida
+                })
+
+                if(!partida) {
+                    socket.emit('error','partida no existente')
+                    console.log("error al encontrar partida")
+                    return
+                }
+
+                //comprobamos que se el jugador se encuentre la partida
+                if (!partida.jugadores.includes(decoded.id)){
+                    socket.emit('error', 'You arent player of this game')
+                    return
+                }
+
+                let user = await UserModel.findById(decoded.id)
+
+                //si la partida no ha comenzado lo eliminamos de la partida y lo notificamos a la sala de espera
+                if(!partida.comenzada){
+                    //si se va el anfitrion eliminamos la partida
+                    if (partida.anfitrion == decoded.id){
+                        await GameModel.deleteOne({codigo_partida : codigo_partida})
+                        this.sockets.to(`${codigo_partida}`).emit('cancel_game')
+                    }
+                    // si se otro lo eliminamos de la sala de espera
+                    else{
+
+                        partida.jugadores = partida.jugadores.filter(user => user != decoded.id)
+                        await partida.save()
+                        this.sockets.to(`${codigo_partida}`).emit('delete_player', user.username )
+                    }
+
+                }
+                // si la partida ha comzado no se puede salir
+            }
+        })
+
+    },
+
+    
+    async disconnect(socket, id){
+        console.log("se ha desconectado")
+        console.log(socketData[id])
+         if (socketData[id].user){
+            let user = await UserModel.findById(socketData[id].user)
+            if(user.partidaActual){
+                let partida = await GameModel.findOne({ codigo_partida : user.partidaActual}) 
+                partida.desconectados.push(socketData[id].user)
+                partida = await partida.save()
+                this.sockets.to(`${user.partidaActual}`).emit('wait_reconnect',user.username)
+            }
+        }
+
+        delete socketData[socket.id]
+    },
 
     async sendNewPlayer(codigo_partida, data){
         try{

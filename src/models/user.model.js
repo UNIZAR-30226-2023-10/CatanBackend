@@ -22,6 +22,9 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    partidaActual:  {
+        type: Number,
+    }
 })
 
 UserSchema.pre('save', function (next) {

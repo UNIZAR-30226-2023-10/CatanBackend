@@ -45,7 +45,7 @@ const Game = {
             })
 
        }
-       catch(e){
+       catch(err){
             res.status(500).json(err)
             console.error(err)
        }
@@ -143,7 +143,10 @@ const Game = {
 
                     let players_names = []
                     for (id of game.jugadores) {
-                        players_names.push((await UserModel.findById(id)).username)
+                        let player = await UserModel.findById(id)
+                        players_names.push(player.username)
+                        player.partidaActual = game.codigo_partida
+                        player = await player.save()
                     }
                     game.game = create_game(game.codigo_partida, players_names)
                     game.comenzada = true 
