@@ -937,7 +937,7 @@ function update_actions_with_cost(game) {
 }
 
 /**
- * Funcion que usa el caballero y actualiza las materias primas de los jugadores.
+ * Funcion que usa el caballero y actualiza las materias primas de los jugadores
  * 
  * @param {*} game 
  * @param {*} player 
