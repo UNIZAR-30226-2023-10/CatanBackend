@@ -290,9 +290,9 @@ function create_game(code, players) {
         develop_cards: create_development_deck(),
                           // Baraja de cartas de desarrollo
         dices_res: [0,0], // Tirada del turno actual
-        winner: '1',        // Indica el ganador
+        winner: '',        // Indica el ganador
         changeTurn: 0,    // Indica cambio de turno
-        phase: 4,         // Indica el estado de la partida:
+        phase: 0,         // Indica el estado de la partida:
                           // - (0). Ni se ha empezado. Se empezará partida y se elegirá el orden de juego (sin implementar).
                           // - (1). Primera ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección en el orden elegido.
                           // - (2). Segunda Ronda: los jugadores colocan un pueblo y una carretera en un sitio a elección pero en orden inverso.
