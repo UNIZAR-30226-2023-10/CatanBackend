@@ -348,7 +348,7 @@ function create_game(code, players) {
             },
             can_change: [false, false, false, false, false],
             trade_costs: [4,4,4,4,4],
-            puntos : 0
+            puntos: 0
         })
     }
     console.log('Tablero creado')
@@ -383,7 +383,8 @@ function build_city(game, player, ncoor) {
     let villages_set = (game.players[i].villages.length > 0) ? new Set(game.players[i].villages) : new Set()
     villages_set.delete(ncoor)
     game.players[i].villages = [...villages_set]
-    win_check(game,player)
+    // Recalculate points
+    win_check(game, player)
 }
 
 /**
@@ -509,7 +510,8 @@ function build_road(game, player, rcoor, free_road = false) {
     }
     game.players[i].free_nodes = [...free_nodes_set]
     game.players[i].free_roads = [...free_roads_set]
-    win_check(game,player)
+    // Recalculate points
+    win_check(game, player)
 }
 
 /**
@@ -676,7 +678,8 @@ function build_village(game, player, ncoor) {
         }
         game.players[p].free_nodes = [...free_nodes_set]
     }
-    win_check(game,player)
+    // Recalculate points
+    win_check(game, player)
 }
 
 /**
@@ -766,7 +769,6 @@ function next_turn(game, player) {
             } else {
                 game.players[game.current_turn].used_develop_cards = 0
                 game.current_turn = (game.current_turn+1)%(game.players.length)
-                
             }
         }
     }
@@ -1004,25 +1006,20 @@ function use_year_of_plenty(game, player, resources) {
 // Win functions:
 function knights_points(game, player){
     let index = game.players.findIndex(curr_player => curr_player.name === player)
-    console.log('used_knights:', game.players[index].used_knights) 
-    console.log('max_knights:',game.board.max_knights)  
     if(game.players[index].used_knights > game.board.max_knights){
         game.board.max_knights = game.players[index].used_knights
-        game.board.player_max_knights = game.players[index].name
+        game.board.player_max_knights = player
+        //game.board.player_max_knights = game.players[index].name
     }
-    console.log('player_max_knights:',game.board.player_max_knights)  
 }
 
 function roads_points(game, player) {
     let index = game.players.findIndex(curr_player => curr_player.name === player)
     console.log('game.players[index].roads: ',game.players[index].roads.length)
-    console.log('max_roads:',game.board.max_roads)  
-    console.log('game.players[index].name',game.players[index].name)
     if(game.players[index].roads.length > game.board.max_roads){
-        game.board.max_roads =game.players[index].roads.length
-        game.board.player_max_roads = game.players[index].name
+        game.board.max_roads = game.players[index].roads.length
+        game.board.player_max_roads = player
     }
-    console.log('player_max_roads :',game.board.player_max_knights)  
 }
 
 /**

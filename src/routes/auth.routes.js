@@ -10,6 +10,5 @@ const Session = require('../controllers/session.controller')
 
 AuthRouter.post('/register', User.create)
 AuthRouter.post('/login', Session.create)
-AuthRouter.post('/recover', User.recover)
 
 module.exports =  AuthRouter;
